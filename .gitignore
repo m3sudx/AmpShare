@@ -1,0 +1,23 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Node.js dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Next.js generated files
+.next/
+out/
+
+# Logs
+*.log
+
+# Editor and operating system files
+.DS_Store
+.idea/
