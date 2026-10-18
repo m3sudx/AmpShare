@@ -11,6 +11,7 @@ import {
   getVehiclesHandler,
   getVehicleByIdHandler,
   updateVehicleHandler,
+  deleteVehicleHandler,
 } from "./vehicles.controller";
 
 const vehiclesRouter = Router();
@@ -39,6 +40,12 @@ vehiclesRouter.patch(
     body: updateVehicleSchema,
   }),
   updateVehicleHandler
+);
+
+vehiclesRouter.delete(
+  "/:id",
+  validate({ params: vehicleIdParamSchema }),
+  deleteVehicleHandler
 );
 
 export default vehiclesRouter;

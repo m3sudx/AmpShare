@@ -109,3 +109,26 @@ export const updateVehicleHandler = async (
     next(error);
   }
 };
+
+/**
+ * Delete an owned vehicle if no booking references it
+ * DELETE /api/vehicles/:id
+ */
+export const deleteVehicleHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const driverId = req.user?.id;
+    if (!driverId) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    await vehicleService.deleteVehicle(driverId, req.params.id);
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};

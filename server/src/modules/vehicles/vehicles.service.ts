@@ -156,3 +156,34 @@ export const updateVehicle = async (
 
   return formatVehicleResponse(result.rows[0]);
 };
+
+/**
+ * Deletes a vehicle owned by the authenticated driver.
+ * Returns 404 if vehicle does not exist or belongs to another user.
+ * Returns 409 Conflict if vehicle is referenced by existing bookings (FK RESTRICT).
+ */
+export const deleteVehicle = async (
+  driverId: string,
+  vehicleId: string
+): Promise<void> => {
+  try {
+    const query = `
+      DELETE FROM vehicles
+      WHERE id = $1 AND driver_id = $2
+    `;
+
+    const result = await pool.query(query, [vehicleId, driverId]);
+
+    if (result.rowCount === 0) {
+      throw new AppError("Vehicle not found", 404);
+    }
+  } catch (error: any) {
+    if (error?.code === "23503") {
+      throw new AppError(
+        "Vehicle cannot be deleted while a booking references it",
+        409
+      );
+    }
+    throw error;
+  }
+};
