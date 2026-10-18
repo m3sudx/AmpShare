@@ -1,8 +1,8 @@
 import { Router } from "express";
+import authRouter from "../modules/auth/auth.routes";
 
-const aipRouters= Router();
+const aipRouters = Router();
 
-// Register your API routes here
-// Example: router.use("/chargers", chargerRoutes);
+aipRouters.use("/auth", authRouter);
 
 export default aipRouters;
