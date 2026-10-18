@@ -42,3 +42,33 @@ export const loginHandler = async (
     next(error);
   }
 };
+
+/**
+ * Retrieves the profile of the current authenticated user
+ * GET /api/auth/me
+ */
+export const getMeHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+      return;
+    }
+
+    const result = await authService.getCurrentUser(userId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

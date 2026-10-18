@@ -134,3 +134,38 @@ export const loginUser = async (input: { phoneNumber: string; password: string }
 
   return { user, accessToken };
 };
+
+/**
+ * Retrieves the current authenticated user profile and assigned roles.
+ */
+export const getCurrentUser = async (userId: string): Promise<{ user: PublicUser }> => {
+  const userResult = await pool.query(
+    `SELECT id, full_name, phone_number, phone_verified_at, created_at
+     FROM users
+     WHERE id = $1`,
+    [userId]
+  );
+
+  if (userResult.rowCount === 0) {
+    throw new AppError("User account not found", 404);
+  }
+
+  const dbUser = userResult.rows[0];
+
+  const rolesResult = await pool.query(
+    `SELECT role FROM user_roles WHERE user_id = $1`,
+    [userId]
+  );
+  const roles = rolesResult.rows.map((row) => row.role);
+
+  const user: PublicUser = {
+    id: dbUser.id,
+    fullName: dbUser.full_name,
+    phoneNumber: dbUser.phone_number,
+    roles,
+    phoneVerified: Boolean(dbUser.phone_verified_at),
+    createdAt: new Date(dbUser.created_at).toISOString(),
+  };
+
+  return { user };
+};
