@@ -56,3 +56,25 @@ export const createVehicle = async (
   const result = await pool.query(query, values);
   return formatVehicleResponse(result.rows[0]);
 };
+
+/**
+ * Lists all vehicles owned by the authenticated driver.
+ */
+export const getVehiclesByDriver = async (
+  driverId: string
+): Promise<{ vehicles: VehicleResponse[]; count: number }> => {
+  const query = `
+    SELECT id, driver_id, make, model, battery_capacity_kwh, plug_type, created_at
+    FROM vehicles
+    WHERE driver_id = $1
+    ORDER BY created_at DESC
+  `;
+
+  const result = await pool.query(query, [driverId]);
+  const vehicles = result.rows.map(formatVehicleResponse);
+
+  return {
+    vehicles,
+    count: vehicles.length,
+  };
+};

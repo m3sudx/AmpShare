@@ -27,3 +27,29 @@ export const createVehicleHandler = async (
     next(error);
   }
 };
+
+/**
+ * List only the current user's vehicles
+ * GET /api/vehicles
+ */
+export const getVehiclesHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const driverId = req.user?.id;
+    if (!driverId) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    const data = await vehicleService.getVehiclesByDriver(driverId);
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

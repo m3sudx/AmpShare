@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middleware/auth";
 import { validate } from "../../middleware/validate";
 import { createVehicleSchema } from "./vehicles.validation";
-import { createVehicleHandler } from "./vehicles.controller";
+import { createVehicleHandler, getVehiclesHandler } from "./vehicles.controller";
 
 const vehiclesRouter = Router();
 
@@ -14,5 +14,7 @@ vehiclesRouter.post(
   validate({ body: createVehicleSchema }),
   createVehicleHandler
 );
+
+vehiclesRouter.get("/", getVehiclesHandler);
 
 export default vehiclesRouter;
