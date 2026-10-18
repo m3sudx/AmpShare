@@ -78,3 +78,26 @@ export const getVehiclesByDriver = async (
     count: vehicles.length,
   };
 };
+
+/**
+ * Retrieves a vehicle by ID for the authenticated driver.
+ * Returns 404 if vehicle does not exist or belongs to another user.
+ */
+export const getVehicleById = async (
+  driverId: string,
+  vehicleId: string
+): Promise<VehicleResponse> => {
+  const query = `
+    SELECT id, driver_id, make, model, battery_capacity_kwh, plug_type, created_at
+    FROM vehicles
+    WHERE id = $1 AND driver_id = $2
+  `;
+
+  const result = await pool.query(query, [vehicleId, driverId]);
+
+  if (result.rowCount === 0) {
+    throw new AppError("Vehicle not found", 404);
+  }
+
+  return formatVehicleResponse(result.rows[0]);
+};
