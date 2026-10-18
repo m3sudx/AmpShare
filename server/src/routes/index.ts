@@ -1,9 +1,11 @@
 import { Router } from "express";
-import chargersRoute from "../modules/chargers/chargers.routes"
+import authRouter from "../modules/auth/auth.routes";
+import chargersRoute from "../modules/chargers/chargers.routes";
 
-const apiRouters= Router();
+const apiRouters = Router();
 
-apiRouters.use('/chargers',chargersRoute)
+apiRouters.use("/auth", authRouter);
+apiRouters.use("/chargers", chargersRoute);
 
 export default apiRouters;
 
