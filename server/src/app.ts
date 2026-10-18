@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { pool } from "./config/db";
-import aipRouters from "./routes";
+import apiRouters from "./routes";
 import notFound from "./middleware/not-found";
 import errorHandler from "./middleware/error-handler";
 
@@ -39,7 +39,7 @@ app.get("/api/health", async (_req, res) => {
 
 
 // Main API router
-app.use('/api',aipRouters)
+app.use('/api',apiRouters)
 
 // Handle requests that match no registered route
 app.use(notFound);

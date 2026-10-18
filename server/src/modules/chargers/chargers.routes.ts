@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { getNearbyChargers,createChargerHandler,listChargersHandler, getChargerByIdHandler, listMyChargersHandler, updateChargerHandler, deleteChargerHandler } from "./chargers.controller";
-
 const chargersRoute= Router()
 
 chargersRoute.get('/nearby',getNearbyChargers)
