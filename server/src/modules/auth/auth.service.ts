@@ -89,3 +89,48 @@ export const registerUser = async (input: RegisterInput): Promise<AuthResponse> 
     client.release();
   }
 };
+
+/**
+ * Verifies phone and password, returning user profile and access token.
+ * Generic 401 response if phone or password is incorrect.
+ */
+export const loginUser = async (input: { phoneNumber: string; password: string }): Promise<AuthResponse> => {
+  const normalizedPhone = normalizePhoneNumber(input.phoneNumber);
+
+  const userResult = await pool.query(
+    `SELECT id, full_name, phone_number, password_hash, phone_verified_at, created_at
+     FROM users
+     WHERE phone_number = $1`,
+    [normalizedPhone]
+  );
+
+  if (userResult.rowCount === 0) {
+    throw new AppError("Invalid phone number or password", 401);
+  }
+
+  const dbUser = userResult.rows[0];
+
+  const isPasswordValid = await bcrypt.compare(input.password, dbUser.password_hash);
+  if (!isPasswordValid) {
+    throw new AppError("Invalid phone number or password", 401);
+  }
+
+  const rolesResult = await pool.query(
+    `SELECT role FROM user_roles WHERE user_id = $1`,
+    [dbUser.id]
+  );
+  const roles = rolesResult.rows.map((row) => row.role);
+
+  const user: PublicUser = {
+    id: dbUser.id,
+    fullName: dbUser.full_name,
+    phoneNumber: dbUser.phone_number,
+    roles,
+    phoneVerified: Boolean(dbUser.phone_verified_at),
+    createdAt: new Date(dbUser.created_at).toISOString(),
+  };
+
+  const accessToken = signAccessToken({ sub: user.id, roles });
+
+  return { user, accessToken };
+};

@@ -25,3 +25,20 @@ export const registerSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const loginSchema = z.object({
+  phoneNumber: z
+    .string({ message: "Phone number is required" })
+    .trim()
+    .min(1, "Phone number cannot be empty")
+    .max(20, "Phone number must not exceed 20 characters")
+    .refine((val) => isValidPhoneNumber(val), {
+      message: "Invalid phone number format",
+    })
+    .transform((val) => normalizePhoneNumber(val)),
+  password: z
+    .string({ message: "Password is required" })
+    .min(1, "Password cannot be empty"),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
