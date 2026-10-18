@@ -1,8 +1,9 @@
 import { Router } from "express";
+import chargersRoute from "../modules/chargers/chargers.routes"
 
-const aipRouters= Router();
+const apiRouters= Router();
 
-// Register your API routes here
-// Example: router.use("/chargers", chargerRoutes);
+apiRouters.use('/chargers',chargersRoute)
 
-export default aipRouters;
+export default apiRouters;
+
