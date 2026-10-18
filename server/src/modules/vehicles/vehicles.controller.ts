@@ -79,3 +79,33 @@ export const getVehicleByIdHandler = async (
     next(error);
   }
 };
+
+/**
+ * Update permitted vehicle fields
+ * PATCH /api/vehicles/:id
+ */
+export const updateVehicleHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const driverId = req.user?.id;
+    if (!driverId) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    const vehicle = await vehicleService.updateVehicle(
+      driverId,
+      req.params.id,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      data: { vehicle },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

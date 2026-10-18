@@ -1,6 +1,6 @@
 import { pool } from "../../config/db";
 import { AppError } from "../../utils/app-error";
-import type { CreateVehicleInput } from "./vehicles.validation";
+import type { CreateVehicleInput, UpdateVehicleInput } from "./vehicles.validation";
 
 export interface VehicleResponse {
   id: string;
@@ -94,6 +94,61 @@ export const getVehicleById = async (
   `;
 
   const result = await pool.query(query, [vehicleId, driverId]);
+
+  if (result.rowCount === 0) {
+    throw new AppError("Vehicle not found", 404);
+  }
+
+  return formatVehicleResponse(result.rows[0]);
+};
+
+/**
+ * Updates permitted vehicle fields for the authenticated driver.
+ * Returns 404 if vehicle is not found or not owned by driver.
+ */
+export const updateVehicle = async (
+  driverId: string,
+  vehicleId: string,
+  input: UpdateVehicleInput
+): Promise<VehicleResponse> => {
+  const setClauses: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  if (input.make !== undefined) {
+    setClauses.push(`make = $${paramIndex++}`);
+    values.push(input.make);
+  }
+  if (input.model !== undefined) {
+    setClauses.push(`model = $${paramIndex++}`);
+    values.push(input.model);
+  }
+  if (input.batteryCapacityKwh !== undefined) {
+    setClauses.push(`battery_capacity_kwh = $${paramIndex++}`);
+    values.push(input.batteryCapacityKwh);
+  }
+  if (input.plugType !== undefined) {
+    setClauses.push(`plug_type = $${paramIndex++}`);
+    values.push(input.plugType);
+  }
+
+  if (setClauses.length === 0) {
+    throw new AppError("No fields provided for update", 400);
+  }
+
+  values.push(vehicleId);
+  const vehicleIdParam = `$${paramIndex++}`;
+  values.push(driverId);
+  const driverIdParam = `$${paramIndex++}`;
+
+  const query = `
+    UPDATE vehicles
+    SET ${setClauses.join(", ")}
+    WHERE id = ${vehicleIdParam} AND driver_id = ${driverIdParam}
+    RETURNING id, driver_id, make, model, battery_capacity_kwh, plug_type, created_at
+  `;
+
+  const result = await pool.query(query, values);
 
   if (result.rowCount === 0) {
     throw new AppError("Vehicle not found", 404);
