@@ -1,8 +1,7 @@
-import type { RequestHandler, Response } from "express";
-import type { AuthedRequest } from "../middleware/authenticate";
+import type { Request, RequestHandler, Response } from "express";
 
 export const asyncHandler =
-  (fn: (req: AuthedRequest, res: Response) => Promise<void>): RequestHandler =>
+  (fn: (req: Request, res: Response) => Promise<void>): RequestHandler =>
   (req, res, next) => {
-    fn(req as AuthedRequest, res).catch(next);
+    fn(req, res).catch(next);
   };

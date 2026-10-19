@@ -1,3 +1,4 @@
+
 services:
   db:
     image: postgis/postgis:16-3.5
@@ -16,7 +17,11 @@ services:
       - ./server/database/init:/docker-entrypoint-initdb.d:ro
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -38,7 +43,6 @@ services:
       DB_USER: ${POSTGRES_USER:-ampshare}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
 
     volumes:
       - ./server/src:/app/src
