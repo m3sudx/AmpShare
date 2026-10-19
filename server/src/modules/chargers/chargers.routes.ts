@@ -1,15 +1,23 @@
 import { Router } from "express";
-import { getNearbyChargers,createChargerHandler,listChargersHandler, getChargerByIdHandler, listMyChargersHandler, updateChargerHandler, deleteChargerHandler } from "./chargers.controller";
+import { authenticate, optionalAuthenticate, requireRole } from "../../middleware/auth";
+import {
+  getNearbyChargers,
+  createChargerHandler,
+  listChargersHandler,
+  getChargerByIdHandler,
+  listMyChargersHandler,
+  updateChargerHandler,
+  deleteChargerHandler,
+} from "./chargers.controller";
 
-const chargersRoute= Router()
+const chargersRoute = Router();
 
-chargersRoute.get('/nearby',getNearbyChargers)
-chargersRoute.post('/',createChargerHandler)
-chargersRoute.get('/',listChargersHandler)
-chargersRoute.get('/mine',listMyChargersHandler);
-chargersRoute.get('/:id',getChargerByIdHandler);
-chargersRoute.patch('/:id',updateChargerHandler);
-chargersRoute.delete('/:id',deleteChargerHandler);
+chargersRoute.get("/nearby", getNearbyChargers);
+chargersRoute.get("/mine", authenticate, requireRole("HOST"), listMyChargersHandler);
+chargersRoute.get("/", listChargersHandler);
+chargersRoute.post("/", authenticate, requireRole("HOST"), createChargerHandler);
+chargersRoute.get("/:id", optionalAuthenticate, getChargerByIdHandler);
+chargersRoute.patch("/:id", authenticate, requireRole("HOST"), updateChargerHandler);
+chargersRoute.delete("/:id", authenticate, requireRole("HOST"), deleteChargerHandler);
 
-
-export default chargersRoute
+export default chargersRoute;
