@@ -1,16 +1,46 @@
 import { api } from "./api";
+import type {
+  ApiResponse,
+  AuthResponseData,
+  LoginPayload,
+  MeResponseData,
+  RegisterPayload,
+  User,
+} from "../types/auth";
 
-export interface LoginResult {
-  accessToken: string;
-  user?: { fullName?: string; phoneNumber?: string };
-}
-
-export async function loginRequest(phoneNumber: string, password: string): Promise<LoginResult> {
-  const res = await api.post("/auth/login", { phoneNumber, password });
-  return res.data.data; // adjust to your real response shape
-}
-
-export async function registerRequest(fullName: string, phoneNumber: string, password: string) {
-  const res = await api.post("/auth/register", { fullName, phoneNumber, password });
+/**
+ * Signs in a driver using phone number and password.
+ * POST /api/auth/login
+ */
+export async function loginRequest(
+  payload: LoginPayload
+): Promise<AuthResponseData> {
+  const res = await api.post<ApiResponse<AuthResponseData>>(
+    "/auth/login",
+    payload
+  );
   return res.data.data;
+}
+
+/**
+ * Registers a new driver account.
+ * POST /api/auth/register
+ */
+export async function registerRequest(
+  payload: RegisterPayload
+): Promise<AuthResponseData> {
+  const res = await api.post<ApiResponse<AuthResponseData>>(
+    "/auth/register",
+    payload
+  );
+  return res.data.data;
+}
+
+/**
+ * Fetches the current authenticated user's profile and roles using saved token.
+ * GET /api/auth/me
+ */
+export async function getMeRequest(): Promise<User> {
+  const res = await api.get<ApiResponse<MeResponseData>>("/auth/me");
+  return res.data.data.user;
 }
