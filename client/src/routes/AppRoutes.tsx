@@ -1,36 +1,18 @@
 import { Navigate, Route, Routes } from "react-router";
 
 import AppLayout from "../components/layout/AppLayout";
+import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<Navigate to="/login" replace />}
-      />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* Authentication pages: no main navbar */}
-      <Route
-        path="/login"
-        element={
-          <PlaceholderPage
-            title="Sign in"
-            description="The AmpShare login page will be implemented here."
-          />
-        }
-      />
-
-      <Route
-        path="/register"
-        element={
-          <PlaceholderPage
-            title="Create your AmpShare account"
-            description="The AmpShare registration page will be implemented here."
-          />
-        }
-      />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       {/* Main application: shared navbar */}
       <Route element={<AppLayout />}>
