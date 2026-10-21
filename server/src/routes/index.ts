@@ -12,9 +12,7 @@ apiRouters.use("/auth", authRouter);
 apiRouters.use("/chargers", chargersRoute);
 apiRouters.use("/vehicles", vehiclesRouter);
 apiRouters.use("/", schedulesRouter);
-const aipRouters = Router();
+apiRouters.use("/bookings", bookingsRoutes);
+apiRouters.use("/charging-sessions", chargingSessionsRoutes);
 
-aipRouters.use("/bookings", bookingsRoutes);
-aipRouters.use("/charging-sessions", chargingSessionsRoutes);
-
-export default aipRouters;
+export default apiRouters;

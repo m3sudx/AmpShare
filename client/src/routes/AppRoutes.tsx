@@ -1,98 +1,86 @@
 import { Navigate, Route, Routes } from "react-router";
 
 import AppLayout from "../components/layout/AppLayout";
+import ProtectedRoute from "../components/ProtectedRoute";
+import PublicOnlyRoute from "../components/PublicOnlyRoute";
+import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<Navigate to="/login" replace />}
-      />
+      <Route path="/" element={<Navigate to="/vehicles" replace />} />
 
-      {/* Authentication pages: no main navbar */}
-      <Route
-        path="/login"
-        element={
-          <PlaceholderPage
-            title="Sign in"
-            description="The AmpShare login page will be implemented here."
+      {/* Public-only authentication routes */}
+      <Route element={<PublicOnlyRoute />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+
+      {/* Protected application routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route
+            path="/chargers"
+            element={
+              <PlaceholderPage
+                title="Find Chargers"
+                description="Discover nearby EV charging stations."
+              />
+            }
           />
-        }
-      />
 
-      <Route
-        path="/register"
-        element={
-          <PlaceholderPage
-            title="Create your AmpShare account"
-            description="The AmpShare registration page will be implemented here."
+          <Route
+            path="/bookings"
+            element={
+              <PlaceholderPage
+                title="Bookings"
+                description="View and manage your bookings."
+              />
+            }
           />
-        }
-      />
 
-      {/* Main application: shared navbar */}
-      <Route element={<AppLayout />}>
-        <Route
-          path="/chargers"
-          element={
-            <PlaceholderPage
-              title="Find Chargers"
-              description="Discover nearby EV charging stations."
-            />
-          }
-        />
+          <Route
+            path="/vehicles"
+            element={
+              <PlaceholderPage
+                title="My Vehicles"
+                description="Manage your registered electric vehicles."
+              />
+            }
+          />
 
-        <Route
-          path="/bookings"
-          element={
-            <PlaceholderPage
-              title="Bookings"
-              description="View and manage your bookings."
-            />
-          }
-        />
+          <Route
+            path="/vehicles/new"
+            element={
+              <PlaceholderPage
+                title="Add a vehicle"
+                description="Register your electric vehicle with AmpShare."
+              />
+            }
+          />
 
-        <Route
-          path="/vehicles"
-          element={
-            <PlaceholderPage
-              title="My Vehicles"
-              description="Manage your registered electric vehicles."
-            />
-          }
-        />
+          <Route
+            path="/vehicles/:id/edit"
+            element={
+              <PlaceholderPage
+                title="Edit vehicle"
+                description="Update your vehicle details."
+              />
+            }
+          />
 
-        <Route
-          path="/vehicles/new"
-          element={
-            <PlaceholderPage
-              title="Add a vehicle"
-              description="Register your electric vehicle with AmpShare."
-            />
-          }
-        />
-
-        <Route
-          path="/vehicles/:id/edit"
-          element={
-            <PlaceholderPage
-              title="Edit vehicle"
-              description="Update your vehicle details."
-            />
-          }
-        />
-
-        <Route
-          path="/host"
-          element={
-            <PlaceholderPage
-              title="Host"
-              description="Manage your charging listings and availability."
-            />
-          }
-        />
+          <Route
+            path="/host"
+            element={
+              <PlaceholderPage
+                title="Host"
+                description="Manage your charging listings and availability."
+              />
+            }
+          />
+        </Route>
       </Route>
 
       <Route
