@@ -5,6 +5,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import PublicOnlyRoute from "../components/PublicOnlyRoute";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import VehiclesPage from "../pages/vehicles/VehiclesPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 
 export default function AppRoutes() {
@@ -41,15 +42,7 @@ export default function AppRoutes() {
             }
           />
 
-          <Route
-            path="/vehicles"
-            element={
-              <PlaceholderPage
-                title="My Vehicles"
-                description="Manage your registered electric vehicles."
-              />
-            }
-          />
+          <Route path="/vehicles" element={<VehiclesPage />} />
 
           <Route
             path="/vehicles/new"
