@@ -229,12 +229,12 @@ export default function VehicleForm({
   const modelSuggestions = POPULAR_MODELS_BY_MAKE[currentMakeKey] || [];
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-5 sm:space-y-6">
       {/* Server Error Alert */}
       {serverError && (
         <div
           role="alert"
-          className="p-4 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-3"
+          className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-3"
         >
           <span className="font-bold">Error:</span>
           <span>{serverError}</span>
@@ -242,8 +242,8 @@ export default function VehicleForm({
       )}
 
       {/* Quick-Select Popular EVs in Addis Ababa */}
-      <div className="p-4 sm:p-5 bg-gradient-to-br from-emerald-50/70 via-slate-50/90 to-emerald-50/40 rounded-2xl border border-emerald-200/80 shadow-2xs">
-        <div className="flex items-center justify-between gap-2 mb-3">
+      <div className="p-3.5 sm:p-5 bg-gradient-to-br from-emerald-50/70 via-slate-50/90 to-emerald-50/40 rounded-2xl border border-emerald-200/80 shadow-2xs">
+        <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-emerald-100 text-[#0F9468] flex items-center justify-center shrink-0">
               <Sparkles className="w-3.5 h-3.5" />
@@ -253,7 +253,7 @@ export default function VehicleForm({
                 Quick-Select Popular EVs in Addis Ababa
               </h3>
               <p className="text-[11px] text-slate-500">
-                Click any model to auto-fill specifications and connector standard
+                Click any model to auto-fill specs and connector
               </p>
             </div>
           </div>
@@ -262,7 +262,8 @@ export default function VehicleForm({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+        {/* Mobile: Horizontal Touch Carousel | Tablet & Desktop: Responsive Grid */}
+        <div className="flex overflow-x-auto gap-2.5 pb-2 -mx-1 px-1 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 md:grid-cols-6 no-scrollbar">
           {POPULAR_EV_PRESETS.map((preset) => {
             const isMatch =
               make.trim().toLowerCase() === preset.make.toLowerCase() &&
@@ -273,7 +274,7 @@ export default function VehicleForm({
                 key={`${preset.make}-${preset.model}`}
                 type="button"
                 onClick={() => applyPreset(preset)}
-                className={`p-2.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between ${
+                className={`min-w-[140px] sm:min-w-0 shrink-0 sm:shrink p-2.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between ${
                   isMatch
                     ? "bg-[#0F9468] text-white border-[#0F9468] shadow-xs scale-[1.02]"
                     : "bg-white hover:bg-emerald-50/50 border-slate-200/90 text-slate-800 hover:border-emerald-300 shadow-2xs"
@@ -320,12 +321,12 @@ export default function VehicleForm({
       </div>
 
       {/* Make & Model Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         {/* Make */}
         <div>
           <label
             htmlFor="vehicle-make"
-            className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+            className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 sm:mb-2"
           >
             Vehicle Make
           </label>
@@ -341,7 +342,7 @@ export default function VehicleForm({
               if (errors.make) setErrors((prev) => ({ ...prev, make: undefined }));
             }}
             placeholder="e.g. BYD, Volkswagen, Tesla"
-            className={`w-full px-4 py-3 bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 placeholder:text-slate-400 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all duration-150 ${
+            className={`w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 placeholder:text-slate-400 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all duration-150 ${
               errors.make
                 ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
                 : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-500/20"
@@ -351,9 +352,9 @@ export default function VehicleForm({
             <p className="text-xs text-red-600 mt-1.5 ml-0.5">{errors.make}</p>
           )}
 
-          {/* Quick select makes */}
-          <div className="flex flex-wrap items-center gap-1.5 mt-2">
-            <span className="text-[11px] text-slate-400 mr-0.5">Quick select:</span>
+          {/* Quick select makes - horizontal scroll on mobile */}
+          <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 -mx-0.5 px-0.5 sm:flex-wrap no-scrollbar">
+            <span className="text-[11px] text-slate-400 mr-0.5 shrink-0">Quick select:</span>
             {POPULAR_MAKES.map((m) => {
               const isSelected = make.toLowerCase() === m.toLowerCase();
               return (
@@ -364,7 +365,7 @@ export default function VehicleForm({
                     setMake(m);
                     if (errors.make) setErrors((prev) => ({ ...prev, make: undefined }));
                   }}
-                  className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                  className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer shrink-0 ${
                     isSelected
                       ? "bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold"
                       : "bg-slate-100/70 text-slate-600 border-slate-200 hover:bg-slate-200/70"
@@ -381,7 +382,7 @@ export default function VehicleForm({
         <div>
           <label
             htmlFor="vehicle-model"
-            className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+            className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 sm:mb-2"
           >
             Vehicle Model
           </label>
@@ -397,7 +398,7 @@ export default function VehicleForm({
               if (errors.model) setErrors((prev) => ({ ...prev, model: undefined }));
             }}
             placeholder="e.g. Yuan Plus, Atto 3, ID.4 Crozz"
-            className={`w-full px-4 py-3 bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 placeholder:text-slate-400 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all duration-150 ${
+            className={`w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 placeholder:text-slate-400 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all duration-150 ${
               errors.model
                 ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
                 : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-500/20"
@@ -407,10 +408,10 @@ export default function VehicleForm({
             <p className="text-xs text-red-600 mt-1.5 ml-0.5">{errors.model}</p>
           )}
 
-          {/* Model suggestions based on make */}
+          {/* Model suggestions based on make - horizontal scroll on mobile */}
           {modelSuggestions.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 mt-2">
-              <span className="text-[11px] text-slate-400 mr-0.5">Popular models:</span>
+            <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 -mx-0.5 px-0.5 sm:flex-wrap no-scrollbar">
+              <span className="text-[11px] text-slate-400 mr-0.5 shrink-0">Popular models:</span>
               {modelSuggestions.map((m) => {
                 const isSelected = model.toLowerCase() === m.toLowerCase();
                 return (
@@ -421,7 +422,7 @@ export default function VehicleForm({
                       setModel(m);
                       if (errors.model) setErrors((prev) => ({ ...prev, model: undefined }));
                     }}
-                    className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                    className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer shrink-0 ${
                       isSelected
                         ? "bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold"
                         : "bg-slate-100/70 text-slate-600 border-slate-200 hover:bg-slate-200/70"
@@ -436,9 +437,9 @@ export default function VehicleForm({
         </div>
       </div>
 
-      {/* Battery Capacity with Custom Increment/Decrement Steppers */}
+      {/* Battery Capacity with Responsive Inline Stepper */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5 sm:mb-2">
           <label
             htmlFor="battery-capacity"
             className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
@@ -448,62 +449,60 @@ export default function VehicleForm({
           <span className="text-[11px] text-slate-400">Step ±1 kWh or enter exact</span>
         </div>
 
-        <div className="relative flex items-center">
-          <input
-            id="battery-capacity"
-            name="batteryCapacityKwh"
-            type="number"
-            step="any"
-            min="0.1"
-            max="9999.99"
-            required
-            disabled={isSubmitting}
-            value={batteryCapacityKwh}
-            onChange={(e) => {
-              setBatteryCapacityKwh(e.target.value);
-              if (errors.batteryCapacityKwh) {
-                setErrors((prev) => ({ ...prev, batteryCapacityKwh: undefined }));
-              }
-            }}
-            placeholder="e.g. 60.48"
-            className={`w-full pl-4 pr-38 py-3 bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 placeholder:text-slate-400 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all duration-150 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-              errors.batteryCapacityKwh
-                ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
-                : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-500/20"
-            }`}
-          />
-
-          {/* Stepper + Unit Indicator on the right */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            {/* Dedicated Stepper Buttons */}
-            <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200/90 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => handleCapacityStep(-1)}
-                disabled={isSubmitting || (parseFloat(batteryCapacityKwh) || 0) <= 0.1}
-                title="Decrease battery capacity by 1 kWh"
-                aria-label="Decrease battery capacity by 1 kWh"
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-white hover:bg-slate-50 active:scale-95 text-slate-700 shadow-2xs transition-all disabled:opacity-30 cursor-pointer border border-slate-200/60"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCapacityStep(1)}
-                disabled={isSubmitting}
-                title="Increase battery capacity by 1 kWh"
-                aria-label="Increase battery capacity by 1 kWh"
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-white hover:bg-slate-50 active:scale-95 text-slate-700 shadow-2xs transition-all disabled:opacity-30 cursor-pointer border border-slate-200/60"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* kWh Unit Tag */}
-            <div className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-lg text-xs font-bold pointer-events-none select-none">
-              <BatteryCharging className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+        <div className="flex items-center gap-2">
+          {/* Input with clean kWh tag */}
+          <div className="relative flex-1">
+            <input
+              id="battery-capacity"
+              name="batteryCapacityKwh"
+              type="number"
+              step="any"
+              min="0.1"
+              max="9999.99"
+              required
+              disabled={isSubmitting}
+              value={batteryCapacityKwh}
+              onChange={(e) => {
+                setBatteryCapacityKwh(e.target.value);
+                if (errors.batteryCapacityKwh) {
+                  setErrors((prev) => ({ ...prev, batteryCapacityKwh: undefined }));
+                }
+              }}
+              placeholder="e.g. 60.48"
+              className={`w-full pl-3.5 pr-14 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 placeholder:text-slate-400 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all duration-150 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                errors.batteryCapacityKwh
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-500/20"
+              }`}
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 pointer-events-none select-none flex items-center gap-1">
+              <BatteryCharging className="w-3.5 h-3.5 text-emerald-600" />
               <span>kWh</span>
-            </div>
+            </span>
+          </div>
+
+          {/* Stepper Buttons (- and +) with touch-friendly tap targets */}
+          <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200/90 shadow-2xs shrink-0">
+            <button
+              type="button"
+              onClick={() => handleCapacityStep(-1)}
+              disabled={isSubmitting || (parseFloat(batteryCapacityKwh) || 0) <= 0.1}
+              title="Decrease battery capacity by 1 kWh"
+              aria-label="Decrease battery capacity by 1 kWh"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-white hover:bg-slate-50 active:scale-95 text-slate-700 shadow-2xs transition-all disabled:opacity-30 cursor-pointer border border-slate-200/60"
+            >
+              <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCapacityStep(1)}
+              disabled={isSubmitting}
+              title="Increase battery capacity by 1 kWh"
+              aria-label="Increase battery capacity by 1 kWh"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-white hover:bg-slate-50 active:scale-95 text-slate-700 shadow-2xs transition-all disabled:opacity-30 cursor-pointer border border-slate-200/60 ml-1"
+            >
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
           </div>
         </div>
 
@@ -515,9 +514,9 @@ export default function VehicleForm({
           </p>
         )}
 
-        {/* Quick select capacity pills */}
-        <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-          <span className="text-[11px] text-slate-400 mr-0.5">Quick select size:</span>
+        {/* Quick select capacity pills - horizontal scroll on mobile */}
+        <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto pb-1 -mx-0.5 px-0.5 sm:flex-wrap no-scrollbar">
+          <span className="text-[11px] text-slate-400 mr-0.5 shrink-0">Quick select size:</span>
           {COMMON_BATTERY_SIZES.map((size) => {
             const isSelected =
               Math.abs(parseFloat(batteryCapacityKwh) - size.value) < 0.05;
@@ -531,7 +530,7 @@ export default function VehicleForm({
                     setErrors((prev) => ({ ...prev, batteryCapacityKwh: undefined }));
                   }
                 }}
-                className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer shrink-0 ${
                   isSelected
                     ? "bg-emerald-50 text-emerald-800 border-emerald-300 font-bold shadow-2xs"
                     : "bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-slate-100 hover:text-slate-800"
@@ -549,7 +548,7 @@ export default function VehicleForm({
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           Charging Connector Standard
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           {PLUG_TYPE_OPTIONS.map((option) => {
             const isSelected = plugType === option.value;
 
@@ -564,14 +563,14 @@ export default function VehicleForm({
                     }
                   }
                 }}
-                className={`relative flex flex-col justify-between p-4 rounded-2xl border-2 transition-all duration-150 cursor-pointer select-none ${
+                className={`relative flex flex-col justify-between p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all duration-150 cursor-pointer select-none ${
                   isSelected
                     ? "bg-emerald-50/40 border-[#0F9468] shadow-xs"
                     : "bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50"
                 } ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold tracking-tight ${
                         isSelected
@@ -604,11 +603,11 @@ export default function VehicleForm({
         )}
       </div>
 
-      {/* Form Action Controls */}
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+      {/* Form Action Controls - full width stack on mobile, right-aligned on desktop */}
+      <div className="pt-4 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 sm:gap-3">
         <Link
           to="/vehicles"
-          className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 font-semibold text-xs transition-colors"
+          className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 font-semibold text-xs transition-colors"
         >
           Cancel
         </Link>
@@ -616,7 +615,7 @@ export default function VehicleForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0F9468] hover:bg-[#0c7d58] active:bg-[#086a4c] disabled:opacity-70 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow transition-all duration-150 cursor-pointer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:py-3 bg-[#0F9468] hover:bg-[#0c7d58] active:bg-[#086a4c] disabled:opacity-70 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm hover:shadow transition-all duration-150 cursor-pointer"
         >
           {isSubmitting ? (
             <>

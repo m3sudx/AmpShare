@@ -109,14 +109,14 @@ export default function VehiclesPage() {
   };
 
   return (
-    <div className="space-y-7 animate-in fade-in duration-200">
+    <div className="space-y-5 sm:space-y-7 animate-in fade-in duration-200">
       {/* 409 Conflict Banner (Dismissible) */}
       {conflictBanner && (
         <div
           role="alert"
-          className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4.5 flex items-start justify-between gap-3 shadow-xs"
+          className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4.5 flex items-start justify-between gap-3 shadow-xs"
         >
-          <div className="flex items-start gap-3 min-w-0">
+          <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
             <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900">
@@ -140,9 +140,9 @@ export default function VehiclesPage() {
       )}
 
       {/* Page Header & Action Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 sm:gap-4 pb-1">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-headline">
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 font-headline">
             My Vehicles
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -153,7 +153,7 @@ export default function VehiclesPage() {
         {/* Add vehicle button */}
         <Link
           to="/vehicles/new"
-          className="inline-flex items-center justify-center gap-2 bg-[#0F9468] hover:bg-[#0c7d58] active:bg-[#086a4c] text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm hover:shadow transition-all duration-150 self-start sm:self-auto cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 bg-[#0F9468] hover:bg-[#0c7d58] active:bg-[#086a4c] text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm hover:shadow transition-all duration-150 w-full sm:w-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Add vehicle</span>
@@ -163,14 +163,14 @@ export default function VehiclesPage() {
       {/* Main Content Area based on state */}
       {isLoading ? (
         /* Loading Skeleton */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
           <VehicleSkeleton />
           <VehicleSkeleton />
           <VehicleSkeleton />
         </div>
       ) : errorMessage ? (
         /* Error State with Retry */
-        <div className="bg-white rounded-2xl border border-red-200/80 p-8 shadow-xs text-center max-w-lg mx-auto my-6">
+        <div className="bg-white rounded-2xl border border-red-200/80 p-6 sm:p-8 shadow-xs text-center max-w-lg mx-auto my-4 sm:my-6">
           <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
             <AlertCircle className="w-6 h-6 text-red-600" />
           </div>
@@ -189,11 +189,11 @@ export default function VehiclesPage() {
         </div>
       ) : vehicles.length === 0 ? (
         /* Empty State */
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-10 sm:p-14 shadow-sm text-center max-w-xl mx-auto my-6">
-          <div className="w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4 text-[#0F9468]">
-            <CarFront className="w-8 h-8" />
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-6 sm:p-14 shadow-sm text-center max-w-xl mx-auto my-4 sm:my-6">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4 text-[#0F9468]">
+            <CarFront className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             No vehicles added yet
           </h3>
           <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-2 mb-6 leading-relaxed">
@@ -201,7 +201,7 @@ export default function VehiclesPage() {
           </p>
           <Link
             to="/vehicles/new"
-            className="inline-flex items-center justify-center gap-2 bg-[#0F9468] hover:bg-[#0c7d58] text-white px-6 py-3 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition-all duration-150 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 bg-[#0F9468] hover:bg-[#0c7d58] text-white px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition-all duration-150 w-full sm:w-auto cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add your first vehicle</span>
@@ -209,7 +209,7 @@ export default function VehiclesPage() {
         </div>
       ) : (
         /* Populated Vehicles Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
           {vehicles.map((vehicle, idx) => (
             <VehicleCard
               key={vehicle.id}
@@ -222,23 +222,23 @@ export default function VehiclesPage() {
       )}
 
       {/* Network Hardware Compatibility Guarantee Card */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="p-2.5 bg-emerald-50 rounded-xl text-[#0F9468] shrink-0 border border-emerald-100">
-              <Zap className="w-5 h-5" />
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-3.5">
+            <div className="p-2 sm:p-2.5 bg-emerald-50 rounded-xl text-[#0F9468] shrink-0 border border-emerald-100 mt-0.5 sm:mt-0">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
                 AmpShare Plug Compatibility Guarantee
               </h4>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
                 Our peer host network supports GB/T (China import), CCS 2 (Combo), and Type 2 (Mennekes) AC/DC connectors.
               </p>
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold text-emerald-800 bg-emerald-50/80 border border-emerald-200/80 px-3 py-1.5 rounded-lg shrink-0 self-start sm:self-auto">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-semibold text-emerald-800 bg-emerald-50/80 border border-emerald-200/80 px-2.5 sm:px-3 py-1.5 rounded-lg shrink-0 self-start sm:self-auto">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span>Verified Charging Standards</span>
           </div>

@@ -27,21 +27,21 @@ export default function VehicleCard({
     : null;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(15,23,42,0.09)] hover:border-emerald-500/40 transition-all duration-200 flex flex-col justify-between group">
+    <div className="bg-white rounded-2xl border border-slate-200/90 p-4.5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(15,23,42,0.09)] hover:border-emerald-500/40 transition-all duration-200 flex flex-col justify-between group">
       <div>
         {/* Header: Make & Model */}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800/80 bg-emerald-50/80 px-2 py-0.5 rounded-md border border-emerald-100">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-800/80 bg-emerald-50/80 px-2 py-0.5 rounded-md border border-emerald-100">
               {vehicle.make}
             </span>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight mt-1.5 group-hover:text-[#0F9468] transition-colors">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mt-1 group-hover:text-[#0F9468] transition-colors">
               {vehicle.make} {vehicle.model}
             </h3>
           </div>
 
           {isPrimary && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ECFDF5] text-[#0F9468] border border-[#A7F3D0] shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-[#ECFDF5] text-[#0F9468] border border-[#A7F3D0] shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-[#0F9468]" />
               Primary
             </span>
@@ -49,17 +49,17 @@ export default function VehicleCard({
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-slate-100 my-4" />
+        <div className="h-px bg-slate-100 my-3.5 sm:my-4" />
 
         {/* Specs List */}
-        <div className="space-y-3 text-sm">
+        <div className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm">
           {/* Battery Capacity */}
           <div className="flex items-center justify-between">
             <span className="text-slate-500 flex items-center gap-2 text-xs font-medium">
               <BatteryCharging className="w-4 h-4 text-emerald-600 shrink-0" />
               Battery Capacity
             </span>
-            <span className="font-semibold text-slate-900 text-sm tracking-tight tabular-nums">
+            <span className="font-semibold text-slate-900 text-xs sm:text-sm tracking-tight tabular-nums">
               {vehicle.batteryCapacityKwh.toFixed(2)} kWh
             </span>
           </div>
@@ -89,10 +89,10 @@ export default function VehicleCard({
       </div>
 
       {/* Action Footer */}
-      <div className="pt-5 mt-6 border-t border-slate-100 flex items-center justify-between">
+      <div className="pt-4 sm:pt-5 mt-4 sm:mt-6 border-t border-slate-100 flex items-center justify-between">
         <Link
           to={`/vehicles/${vehicle.id}/edit`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#0F9468] transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-50 active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#0F9468] transition-colors py-2 px-3 rounded-lg hover:bg-slate-50 active:scale-[0.98]"
         >
           <Edit3 className="w-3.5 h-3.5" />
           <span>Edit</span>
@@ -101,7 +101,7 @@ export default function VehicleCard({
         <button
           type="button"
           onClick={() => onDeleteClick(vehicle)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors py-1.5 px-3 rounded-lg hover:bg-red-50 active:scale-[0.98] cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors py-2 px-3 rounded-lg hover:bg-red-50 active:scale-[0.98] cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
           <span>Delete</span>

@@ -127,23 +127,23 @@ export default function VehicleFormPage() {
     : undefined;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-150">
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in duration-150">
       {/* Back Button & Header */}
       <div>
         <Link
           to="/vehicles"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors mb-3 group"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors mb-2.5 sm:mb-3 group"
         >
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
           <span>Back to My Vehicles</span>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#0F9468] flex items-center justify-center shrink-0 border border-emerald-100">
-            <CarFront className="w-5 h-5" />
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-emerald-50 text-[#0F9468] flex items-center justify-center shrink-0 border border-emerald-100">
+            <CarFront className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-headline">
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 font-headline">
               {isEditMode ? "Edit Vehicle" : "Add New Vehicle"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -156,7 +156,7 @@ export default function VehicleFormPage() {
       </div>
 
       {/* Main Form Card Container */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-sm">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 p-4 sm:p-7 md:p-9 shadow-sm">
         {isLoadingInitial ? (
           <div className="py-16 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-[#0F9468]" />

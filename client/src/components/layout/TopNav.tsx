@@ -51,7 +51,7 @@ export default function TopNav() {
         {/* Main navigation */}
         <nav
           aria-label="Main navigation"
-          className="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 md:order-0 md:ml-8 md:h-12 md:w-auto md:border-t-0"
+          className="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 md:order-0 md:ml-8 md:h-12 md:w-auto md:border-t-0 no-scrollbar py-0.5 md:py-0"
         >
           {navItems.map(({ to, label }) => {
             // Highlight My Vehicles on /vehicles, /vehicles/new, and /vehicles/:id/edit
@@ -65,8 +65,8 @@ export default function TopNav() {
                 className={({ isActive }) => {
                   const active = isVehicleActive || isActive;
                   return [
-                    "relative flex h-12 shrink-0 items-center px-3.5",
-                    "text-xs font-semibold transition-colors",
+                    "relative flex h-11 md:h-12 shrink-0 items-center px-3 sm:px-3.5",
+                    "text-xs font-semibold transition-colors whitespace-nowrap",
                     "after:absolute after:bottom-0 after:left-3.5",
                     "after:right-3.5 after:h-0.5 after:rounded-t",
                     active
