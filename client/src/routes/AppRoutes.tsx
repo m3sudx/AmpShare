@@ -7,6 +7,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 import BookingsPage from "../pages/bookings/BookingsPage";
+import BookingDetailsPage from "../pages/bookings/BookingDetailsPage";
 
 export default function AppRoutes() {
   return (
@@ -33,6 +34,7 @@ export default function AppRoutes() {
           />
 
           <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/bookings/:id" element={<BookingDetailsPage />} />
 
           <Route
             path="/vehicles"
