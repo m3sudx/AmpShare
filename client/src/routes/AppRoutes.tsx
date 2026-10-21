@@ -6,6 +6,7 @@ import PublicOnlyRoute from "../components/PublicOnlyRoute";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
+import BookingsPage from "../pages/bookings/BookingsPage";
 
 export default function AppRoutes() {
   return (
@@ -31,15 +32,7 @@ export default function AppRoutes() {
             }
           />
 
-          <Route
-            path="/bookings"
-            element={
-              <PlaceholderPage
-                title="Bookings"
-                description="View and manage your bookings."
-              />
-            }
-          />
+          <Route path="/bookings" element={<BookingsPage />} />
 
           <Route
             path="/vehicles"
