@@ -5,9 +5,21 @@ import { hasPgCode, withTransaction } from "../../utils/db-helpers";
 
 const PENDING_HOLD_MINUTES = 15;
 
+type Db = { query: (text: string, params?: any[]) => Promise<any> };
+
 // Explicit columns so qr_handshake_token never leaks
 const COLS = `b.id, b.driver_id, b.charger_id, b.vehicle_id, b.status, b.start_time, b.end_time,
-  b.price_per_kwh_at_booking, b.estimated_energy_kwh, b.estimated_cost, b.expires_at, b.created_at`;
+  b.price_per_kwh_at_booking, b.estimated_energy_kwh, b.estimated_cost, b.final_cost,
+  b.expires_at, b.created_at,
+  c.title AS charger_title, c.address_description AS charger_address,
+  c.power_kw AS charger_power_kw, c.plug_type AS charger_plug_type,
+  v.make AS vehicle_make, v.model AS vehicle_model, v.plug_type AS vehicle_plug_type,
+  h.id AS host_id, h.full_name AS host_name`;
+
+const FROM = `FROM bookings b
+  JOIN chargers c ON c.id = b.charger_id
+  JOIN vehicles v ON v.id = b.vehicle_id
+  JOIN users h ON h.id = c.host_id`;
 
 function toBooking(row: any) {
   return {
@@ -24,9 +36,31 @@ function toBooking(row: any) {
         ? null
         : Number(row.estimated_energy_kwh),
     estimatedCost: Number(row.estimated_cost),
+    finalCost: row.final_cost === null ? null : Number(row.final_cost),
     expiresAt: row.expires_at,
     createdAt: row.created_at,
+    charger: {
+      id: row.charger_id,
+      title: row.charger_title,
+      addressDescription: row.charger_address,
+      powerKw: Number(row.charger_power_kw),
+      plugType: row.charger_plug_type,
+    },
+    vehicle: {
+      id: row.vehicle_id,
+      make: row.vehicle_make,
+      model: row.vehicle_model,
+      plugType: row.vehicle_plug_type,
+    },
+    host: { id: row.host_id, fullName: row.host_name },
   };
+}
+
+async function fetchBooking(db: Db, id: string) {
+  const { rows } = await db.query(`SELECT ${COLS} ${FROM} WHERE b.id = $1`, [
+    id,
+  ]);
+  return toBooking(rows[0]);
 }
 
 export async function createBooking(
@@ -95,11 +129,11 @@ export async function createBooking(
       const cost = Math.round(energy * price * 100) / 100;
 
       const inserted = await client.query(
-        `INSERT INTO bookings AS b
+        `INSERT INTO bookings
            (driver_id, charger_id, vehicle_id, start_time, end_time, status,
             price_per_kwh_at_booking, estimated_energy_kwh, estimated_cost, expires_at)
          VALUES ($1, $2, $3, $4, $5, 'PENDING', $6, $7, $8, now() + make_interval(mins => $9::int))
-         RETURNING ${COLS}`,
+         RETURNING id`,
         [
           driverId,
           charger.id,
@@ -112,7 +146,7 @@ export async function createBooking(
           PENDING_HOLD_MINUTES,
         ],
       );
-      return toBooking(inserted.rows[0]);
+      return fetchBooking(client, inserted.rows[0].id);
     });
   } catch (err) {
     if (hasPgCode(err, "23P01"))
@@ -123,8 +157,7 @@ export async function createBooking(
 
 export async function listBookings(userId: string, status?: string) {
   const { rows } = await pool.query(
-    `SELECT ${COLS}
-     FROM bookings b JOIN chargers c ON c.id = b.charger_id
+    `SELECT ${COLS} ${FROM}
      WHERE (b.driver_id = $1 OR c.host_id = $1)
        AND ($2::booking_status IS NULL OR b.status = $2::booking_status)
      ORDER BY b.start_time DESC`,
@@ -135,8 +168,7 @@ export async function listBookings(userId: string, status?: string) {
 
 export async function getBooking(userId: string, id: string) {
   const { rows } = await pool.query(
-    `SELECT ${COLS}
-     FROM bookings b JOIN chargers c ON c.id = b.charger_id
+    `SELECT ${COLS} ${FROM}
      WHERE b.id = $1 AND (b.driver_id = $2 OR c.host_id = $2)`,
     [id, userId],
   );
@@ -180,11 +212,11 @@ export async function confirmBooking(hostId: string, id: string) {
       return { ok: false, conflict: "Booking has expired" };
     }
 
-    const upd = await client.query(
-      `UPDATE bookings AS b SET status = 'CONFIRMED' WHERE b.id = $1 RETURNING ${COLS}`,
+    await client.query(
+      "UPDATE bookings SET status = 'CONFIRMED' WHERE id = $1",
       [id],
     );
-    return { ok: true, booking: toBooking(upd.rows[0]) };
+    return { ok: true, booking: await fetchBooking(client, id) };
   });
 
   if (!result.ok) throw new AppError(result.conflict, 409);
@@ -203,10 +235,10 @@ export async function cancelBooking(userId: string, id: string) {
         409,
       );
     }
-    const upd = await client.query(
-      `UPDATE bookings AS b SET status = 'CANCELLED' WHERE b.id = $1 RETURNING ${COLS}`,
+    await client.query(
+      "UPDATE bookings SET status = 'CANCELLED' WHERE id = $1",
       [id],
     );
-    return toBooking(upd.rows[0]);
+    return fetchBooking(client, id);
   });
 }

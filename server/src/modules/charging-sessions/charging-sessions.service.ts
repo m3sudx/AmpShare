@@ -4,26 +4,46 @@ import { hasPgCode, withTransaction } from "../../utils/db-helpers";
 
 type Db = { query: (text: string, params?: any[]) => Promise<any> };
 
-const SESSION_COLS = `s.id, s.booking_id, s.started_at, s.ended_at,
-  s.energy_delivered_kwh, b.status AS booking_status`;
+const SESSION_COLS = `s.id, s.booking_id, s.started_at, s.ended_at, s.energy_delivered_kwh,
+  b.status AS booking_status, b.start_time AS booking_start_time, b.end_time AS booking_end_time,
+  b.price_per_kwh_at_booking, b.final_cost,
+  c.title AS charger_title, c.address_description AS charger_address,
+  c.power_kw AS charger_power_kw, c.plug_type AS charger_plug_type,
+  v.make AS vehicle_make, v.model AS vehicle_model`;
+
+const SESSION_FROM = `FROM charging_sessions s
+  JOIN bookings b ON b.id = s.booking_id
+  JOIN chargers c ON c.id = b.charger_id
+  JOIN vehicles v ON v.id = b.vehicle_id`;
 
 function toSession(row: any) {
   return {
     id: row.id,
     bookingId: row.booking_id,
+    status: row.ended_at === null ? "ACTIVE" : "FINISHED",
     startedAt: row.started_at,
     endedAt: row.ended_at,
     energyDeliveredKwh: Number(row.energy_delivered_kwh),
+    pricePerKwh: Number(row.price_per_kwh_at_booking),
+    finalCost: row.final_cost === null ? null : Number(row.final_cost),
+    booking: {
+      startTime: row.booking_start_time,
+      endTime: row.booking_end_time,
+    },
+    charger: {
+      title: row.charger_title,
+      addressDescription: row.charger_address,
+      powerKw: Number(row.charger_power_kw),
+      plugType: row.charger_plug_type,
+    },
+    vehicle: { make: row.vehicle_make, model: row.vehicle_model },
   };
 }
 
 // userId = null means "no access filter" (only used inside transactions that already checked access)
 async function loadSession(db: Db, id: string, userId: string | null) {
   const { rows } = await db.query(
-    `SELECT ${SESSION_COLS}
-     FROM charging_sessions s
-     JOIN bookings b ON b.id = s.booking_id
-     JOIN chargers c ON c.id = b.charger_id
+    `SELECT ${SESSION_COLS} ${SESSION_FROM}
      WHERE s.id = $1 AND ($2::uuid IS NULL OR b.driver_id = $2 OR c.host_id = $2)`,
     [id, userId],
   );
@@ -82,10 +102,7 @@ export async function startSession(userId: string, bookingId: string) {
 
 export async function listSessions(userId: string) {
   const { rows } = await pool.query(
-    `SELECT ${SESSION_COLS}
-     FROM charging_sessions s
-     JOIN bookings b ON b.id = s.booking_id
-     JOIN chargers c ON c.id = b.charger_id
+    `SELECT ${SESSION_COLS} ${SESSION_FROM}
      WHERE b.driver_id = $1 OR c.host_id = $1
      ORDER BY s.created_at DESC`,
     [userId],
