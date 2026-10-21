@@ -24,7 +24,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 // Clear session if 401 Unauthorized is returned
@@ -39,5 +39,18 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  },
+  }
 );
+
+/**
+ * Standardize error message extraction from API responses
+ */
+export function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.message || "Unexpected server error";
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "An unexpected error occurred";
+}

@@ -14,6 +14,8 @@ export interface AuthResponseData {
   accessToken: string;
 }
 
+export type AuthResponse = AuthResponseData;
+
 export interface MeResponseData {
   user: User;
 }
@@ -28,7 +30,10 @@ export interface ApiErrorResponse {
   success: false;
   message: string;
   errors?: Record<string, string[]>;
+  details?: unknown;
 }
+
+export type ApiError = ApiErrorResponse;
 
 export interface LoginPayload {
   phoneNumber: string;

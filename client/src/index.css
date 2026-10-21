@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: #172b4d;
-  background: #f8faf9;
+  font-family: 'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #0f172a;
+  background: #f4fbf7;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Outfit, 'Plus Jakarta Sans', Inter, sans-serif;
 }
 
 * {
