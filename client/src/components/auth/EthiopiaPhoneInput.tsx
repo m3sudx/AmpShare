@@ -1,4 +1,5 @@
 import React from "react";
+import { formatEthiopianInput } from "../../utils/phone";
 
 interface EthiopiaPhoneInputProps {
   id?: string;
@@ -18,10 +19,8 @@ export default function EthiopiaPhoneInput({
   required = true,
 }: EthiopiaPhoneInputProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let inputVal = e.target.value;
-    // Allow digits, spaces, and leading plus
-    inputVal = inputVal.replace(/[^\d\s+]/g, "");
-    onChange(inputVal);
+    const formatted = formatEthiopianInput(e.target.value);
+    onChange(formatted);
   };
 
   return (

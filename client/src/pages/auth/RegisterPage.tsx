@@ -4,12 +4,13 @@ import axios from "axios";
 import { Calendar, Eye, EyeOff, Loader2, MapPin, Zap } from "lucide-react";
 import AuthLayout from "../../components/auth/AuthLayout";
 import EthiopiaPhoneInput from "../../components/auth/EthiopiaPhoneInput";
-import { useAuth } from "../../context";
+import { useAuth, useToast } from "../../context";
 import { isValidEthiopianPhone, normalizeEthiopianPhone } from "../../utils/phone";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { showToast } = useToast();
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -87,6 +88,7 @@ export default function RegisterPage() {
         password,
       });
 
+      showToast("Account created successfully! Welcome to AmpShare.", "success");
       navigate("/vehicles", { replace: true });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {

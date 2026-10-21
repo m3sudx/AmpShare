@@ -58,3 +58,39 @@ export function formatPhoneDisplay(phone?: string): string {
   }
   return normalized;
 }
+
+/**
+ * Real-time input formatter for Ethiopian phone numbers inside form inputs.
+ * Strips duplicate +251/251 prefixes and leading 0s, and adds spacing (XX XXX XXXX).
+ */
+export function formatEthiopianInput(rawInput: string): string {
+  if (!rawInput) return "";
+
+  let cleaned = rawInput.trim();
+
+  // Strip duplicate country codes
+  if (cleaned.startsWith("+2510")) {
+    cleaned = cleaned.slice(5);
+  } else if (cleaned.startsWith("+251")) {
+    cleaned = cleaned.slice(4);
+  } else if (cleaned.startsWith("2510")) {
+    cleaned = cleaned.slice(4);
+  } else if (cleaned.startsWith("251")) {
+    cleaned = cleaned.slice(3);
+  }
+
+  // Remove non-digit characters
+  let digits = cleaned.replace(/\D/g, "");
+
+  // Convert 09... or 07... to 9... or 7...
+  if (digits.startsWith("09") || digits.startsWith("07")) {
+    digits = digits.slice(1);
+  }
+
+  // Cap at 9 digits
+  digits = digits.slice(0, 9);
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 5) return `${digits.slice(0, 2)} ${digits.slice(2)}`;
+  return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
+}
