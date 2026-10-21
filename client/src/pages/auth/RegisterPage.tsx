@@ -92,6 +92,16 @@ export default function RegisterPage() {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 409) {
           setGeneralError("This phone number is already registered. Please sign in instead.");
+        } else if (err.response?.data?.details && Array.isArray(err.response.data.details)) {
+          const details = err.response.data.details as Array<{ field?: string; message?: string }>;
+          for (const item of details) {
+            if (item.field === "phoneNumber" && item.message) setPhoneError(item.message);
+            if (item.field === "fullName" && item.message) setFullNameError(item.message);
+            if (item.field === "password" && item.message) setPasswordError(item.message);
+          }
+          if (err.response.data.message) {
+            setGeneralError(String(err.response.data.message));
+          }
         } else if (err.response?.data?.message) {
           setGeneralError(String(err.response.data.message));
         } else {

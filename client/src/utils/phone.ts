@@ -9,17 +9,25 @@ export function normalizeEthiopianPhone(rawPhone: string): string {
   // Strip whitespace, dashes, parentheses, dots
   const cleaned = rawPhone.trim().replace(/[\s\-().]/g, "");
 
+  // If user entered +2510... or 2510... (strip the redundant leading 0 after country code)
+  if (cleaned.startsWith("+2510") && cleaned.length === 14) {
+    return `+251${cleaned.slice(5)}`;
+  }
+  if (cleaned.startsWith("2510") && cleaned.length === 13) {
+    return `+251${cleaned.slice(4)}`;
+  }
+
   // If starts with 09... or 07... (10 digits)
   if (cleaned.startsWith("0") && cleaned.length === 10) {
     return `+251${cleaned.slice(1)}`;
   }
 
-  // If user only entered 9 digits starting with 9 or 7 (e.g. 912345678)
+  // If user only entered 9 digits starting with 9 or 7 (e.g. 911234567)
   if ((cleaned.startsWith("9") || cleaned.startsWith("7")) && cleaned.length === 9) {
     return `+251${cleaned}`;
   }
 
-  // If starts with 251 without +
+  // If starts with 251 without + (12 digits, e.g. 251911234567)
   if (cleaned.startsWith("251") && !cleaned.startsWith("+")) {
     return `+${cleaned}`;
   }
@@ -29,19 +37,16 @@ export function normalizeEthiopianPhone(rawPhone: string): string {
     return cleaned;
   }
 
-  // Default fallback prepending +251 if reasonable length
+  // Default fallback prepending +251
   return `+251${cleaned}`;
 }
 
 export function isValidEthiopianPhone(phone: string): boolean {
   if (!phone) return false;
   const normalized = normalizeEthiopianPhone(phone);
-  // Ethiopian mobile numbers in E.164: +251 followed by 9 or 7 and 8 more digits
+  // Ethiopian mobile numbers in E.164: +251 followed by 9 or 7 and 8 more digits (13 chars total)
   const ethiopianMobileRegex = /^\+251[79]\d{8}$/;
-  // General E.164 fallback
-  const generalE164Regex = /^\+[1-9]\d{6,14}$/;
-
-  return ethiopianMobileRegex.test(normalized) || generalE164Regex.test(normalized);
+  return ethiopianMobileRegex.test(normalized);
 }
 
 export function formatPhoneDisplay(phone?: string): string {
