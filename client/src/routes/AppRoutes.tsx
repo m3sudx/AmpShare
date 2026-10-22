@@ -10,6 +10,7 @@ import VehicleFormPage from "../pages/vehicles/VehicleFormPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 import ChargersPage from "../pages/chargers/ChargersPage";
 import ChargerDetailsPage from "../pages/chargers/ChargerDetailsPage";
+import AddChargerPage from "../pages/chargers/AddChargerPage";
 
 export default function AppRoutes() {
   return (
@@ -48,6 +49,8 @@ export default function AppRoutes() {
 
           <Route path="/vehicles/new" element={<VehicleFormPage />} />
           <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
+
+          <Route path="/host/chargers/new" element={<AddChargerPage />} />
 
           <Route
             path="/host"
