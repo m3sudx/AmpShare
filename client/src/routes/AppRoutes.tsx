@@ -14,6 +14,7 @@ import AddChargerPage from "../pages/host/AddChargerPage";
 import ManageSchedulesPage from "../pages/host/ManageSchedulesPage";
 import MyChargersPage from "../pages/host/MyChargersPage";
 import EditChargerPage from "../pages/host/EditChargerPage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 export default function AppRoutes() {
   return (
@@ -60,15 +61,7 @@ export default function AppRoutes() {
         </Route>
       </Route>
 
-      <Route
-        path="*"
-        element={
-          <PlaceholderPage
-            title="Page not found"
-            description="The page you requested does not exist."
-          />
-        }
-      />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
