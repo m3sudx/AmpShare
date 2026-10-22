@@ -5,6 +5,8 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import PublicOnlyRoute from "../components/PublicOnlyRoute";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import VehiclesPage from "../pages/vehicles/VehiclesPage";
+import VehicleFormPage from "../pages/vehicles/VehicleFormPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 import ChargersPage from "../pages/chargers/ChargersPage";
 
@@ -39,35 +41,10 @@ export default function AppRoutes() {
             }
           />
 
-          <Route
-            path="/vehicles"
-            element={
-              <PlaceholderPage
-                title="My Vehicles"
-                description="Manage your registered electric vehicles."
-              />
-            }
-          />
+          <Route path="/vehicles" element={<VehiclesPage />} />
 
-          <Route
-            path="/vehicles/new"
-            element={
-              <PlaceholderPage
-                title="Add a vehicle"
-                description="Register your electric vehicle with AmpShare."
-              />
-            }
-          />
-
-          <Route
-            path="/vehicles/:id/edit"
-            element={
-              <PlaceholderPage
-                title="Edit vehicle"
-                description="Update your vehicle details."
-              />
-            }
-          />
+          <Route path="/vehicles/new" element={<VehicleFormPage />} />
+          <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
 
           <Route
             path="/host"
