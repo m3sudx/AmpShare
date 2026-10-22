@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import LocationPicker from "../../components/chargers/LocationPicker";
@@ -107,7 +107,7 @@ export default function AddChargerPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<FormValues>({
@@ -125,7 +125,12 @@ export default function AddChargerPage() {
     },
   });
 
-  const values = watch();
+  const title = useWatch({ control, name: "title" });
+  const plugType = useWatch({ control, name: "plugType" });
+  const powerKw = useWatch({ control, name: "powerKw" });
+  const pricePerKwh = useWatch({ control, name: "pricePerKwh" });
+  const latitude = useWatch({ control, name: "latitude" });
+  const longitude = useWatch({ control, name: "longitude" });
 
   const mutation = useMutation({
     mutationFn: (v: FormValues) =>
@@ -145,11 +150,11 @@ export default function AddChargerPage() {
   });
 
   // the map shows the typed coordinates when they're valid, otherwise the default point
-  const latNum = Number(values.latitude);
-  const lngNum = Number(values.longitude);
+  const latNum = Number(latitude);
+  const lngNum = Number(longitude);
   const validPoint =
-    values.latitude.trim() !== "" &&
-    values.longitude.trim() !== "" &&
+    latitude.trim() !== "" &&
+    longitude.trim() !== "" &&
     Number.isFinite(latNum) &&
     Number.isFinite(lngNum) &&
     Math.abs(latNum) <= 90 &&
@@ -165,7 +170,7 @@ export default function AddChargerPage() {
     navigator.geolocation.getCurrentPosition((pos) => setPoint(pos.coords.latitude, pos.coords.longitude));
   }
 
-  const price = Number(values.pricePerKwh);
+  const price = Number(pricePerKwh);
 
   return (
     <div className="space-y-5">
@@ -192,7 +197,7 @@ export default function AddChargerPage() {
           <Card title="Basics">
             <Field label="Charger name" htmlFor="title" error={errors.title?.message} hint="Shown on the card and the map">
               <input id="title" type="text" maxLength={100} className={inputClass(!!errors.title)} {...register("title")} />
-              <span className="self-end text-[13px] text-slate-500">{values.title.length} / 100</span>
+              <span className="self-end text-[13px] text-slate-500">{title.length} / 100</span>
             </Field>
             <Field
               label="Address description"
@@ -316,7 +321,7 @@ export default function AddChargerPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="truncate font-semibold text-slate-900">
-                    {values.title.trim() || "Your charger name"}
+                    {title.trim() || "Your charger name"}
                   </div>
                   <div className="text-sm text-slate-500">1.2 km away</div>
                 </div>
@@ -327,10 +332,10 @@ export default function AddChargerPage() {
               </div>
               <div className="mt-3 flex gap-2 text-xs font-medium text-slate-700">
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">
-                  {PLUGS.find((p) => p.value === values.plugType)?.label}
+                  {PLUGS.find((p) => p.value === plugType)?.label}
                 </span>
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">
-                  {Number(values.powerKw) > 0 ? `${Number(values.powerKw)} kW` : "— kW"}
+                  {Number(powerKw) > 0 ? `${Number(powerKw)} kW` : "— kW"}
                 </span>
               </div>
             </div>

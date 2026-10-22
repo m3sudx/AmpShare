@@ -10,7 +10,10 @@ import VehicleFormPage from "../pages/vehicles/VehicleFormPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 import ChargersPage from "../pages/chargers/ChargersPage";
 import ChargerDetailsPage from "../pages/chargers/ChargerDetailsPage";
-import AddChargerPage from "../pages/chargers/AddChargerPage";
+import AddChargerPage from "../pages/host/AddChargerPage";
+import ManageSchedulesPage from "../pages/host/ManageSchedulesPage";
+import MyChargersPage from "../pages/host/MyChargersPage";
+import EditChargerPage from "../pages/host/EditChargerPage";
 
 export default function AppRoutes() {
   return (
@@ -26,15 +29,11 @@ export default function AppRoutes() {
       {/* Protected application routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route
-            path="/chargers"
-            element={
-             <ChargersPage />
-            }
-          />
-
+          {/* Chargers (drivers) */}
+          <Route path="/chargers" element={<ChargersPage />} />
           <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
 
+          {/* Bookings */}
           <Route
             path="/bookings"
             element={
@@ -45,22 +44,19 @@ export default function AppRoutes() {
             }
           />
 
+          {/* Vehicles */}
           <Route path="/vehicles" element={<VehiclesPage />} />
-
           <Route path="/vehicles/new" element={<VehicleFormPage />} />
           <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
 
+          {/* Host */}
+          <Route path="/host" element={<MyChargersPage />} />
           <Route path="/host/chargers/new" element={<AddChargerPage />} />
-
           <Route
-            path="/host"
-            element={
-              <PlaceholderPage
-                title="Host"
-                description="Manage your charging listings and availability."
-              />
-            }
+            path="/host/chargers/:id/schedules"
+            element={<ManageSchedulesPage />}
           />
+          <Route path="/host/chargers/:id/edit" element={<EditChargerPage />} />
         </Route>
       </Route>
 
