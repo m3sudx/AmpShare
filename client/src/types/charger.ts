@@ -13,9 +13,15 @@ export interface Charger {
   location: { latitude: number; longitude: number };
   createdAt: string;
 }
-
-// The nearby endpoint may add extra fields such as the distance. Adjust to its real response.
-export type NearbyCharger = Charger & { distanceMeters?: number };
+export interface NearbyCharger {
+  id: string;
+  title: string;
+  powerKw: number;
+  plugType: PlugType;
+  pricePerKwh: number;
+  location: { latitude: number; longitude: number };
+  distanceMeters: number;
+}
 
 export interface CreateChargerInput {
   title: string;
