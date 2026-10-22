@@ -7,7 +7,7 @@ export async function getNearbyChargers(params: {
   lat: number; lng: number; radius?: number; plugType?: PlugType; limit?: number;
 }) {
   const res = await api.get("/chargers/nearby", { params });
-  return res.data.data.chargers as NearbyCharger[]; // adjust if your response differs
+  return res.data.data.chargers as NearbyCharger[]; 
 }
 
 export async function listChargers(params: {

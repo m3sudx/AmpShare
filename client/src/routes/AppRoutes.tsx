@@ -6,6 +6,7 @@ import PublicOnlyRoute from "../components/PublicOnlyRoute";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
+import ChargersPage from "../pages/chargers/ChargersPage";
 
 export default function AppRoutes() {
   return (
@@ -24,10 +25,7 @@ export default function AppRoutes() {
           <Route
             path="/chargers"
             element={
-              <PlaceholderPage
-                title="Find Chargers"
-                description="Discover nearby EV charging stations."
-              />
+             <ChargersPage />
             }
           />
 
