@@ -132,7 +132,6 @@ export default function ChargersMap({
           eventHandlers={{
             mouseover: (e) => {
               onHover(c.id);
-              // don't show the small tooltip on top of an open popup
               const marker = e.target as L.Marker;
               if (marker.isPopupOpen()) window.setTimeout(() => marker.closeTooltip(), 0);
             },

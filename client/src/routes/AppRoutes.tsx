@@ -9,6 +9,7 @@ import VehiclesPage from "../pages/vehicles/VehiclesPage";
 import VehicleFormPage from "../pages/vehicles/VehicleFormPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 import ChargersPage from "../pages/chargers/ChargersPage";
+import ChargerDetailsPage from "../pages/chargers/ChargerDetailsPage";
 
 export default function AppRoutes() {
   return (
@@ -30,6 +31,8 @@ export default function AppRoutes() {
              <ChargersPage />
             }
           />
+
+          <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
 
           <Route
             path="/bookings"
