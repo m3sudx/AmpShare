@@ -8,6 +8,8 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import PlaceholderPage from "../pages/PlaceholderPage";
 import BookingsPage from "../pages/bookings/BookingsPage";
 import BookingDetailsPage from "../pages/bookings/BookingDetailsPage";
+import BookChargerPage from "../pages/bookings/BookChargerPage";
+import ChargingSessionsPage from "../pages/bookings/ChargingSessionsPage";
 
 export default function AppRoutes() {
   return (
@@ -35,6 +37,11 @@ export default function AppRoutes() {
 
           <Route path="/bookings" element={<BookingsPage />} />
           <Route path="/bookings/:id" element={<BookingDetailsPage />} />
+          <Route path="/sessions" element={<ChargingSessionsPage />} />
+          <Route
+            path="/chargers/:chargerId/book"
+            element={<BookChargerPage />}
+          />
 
           <Route
             path="/vehicles"
