@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { TOKEN_KEY, PROFILE_KEY } from "../services/api";
-import { getMeRequest, loginRequest, registerRequest } from "../services/auth.api";
+import {
+  becomeHostRequest,
+  getMeRequest,
+  loginRequest,
+  registerRequest,
+} from "../services/auth.api";
 import type { LoginPayload, RegisterPayload, User } from "../types/auth";
 import { AuthContext, type AuthContextType } from "./authContextBase";
 
@@ -94,6 +99,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return data.user;
   }, []);
 
+  // Adds the HOST role. Roles live inside the JWT, so swap in the fresh token
+  // first, then reload the profile with the new roles.
+  const becomeHost = useCallback(async (): Promise<User> => {
+    const data = await becomeHostRequest();
+    localStorage.setItem(TOKEN_KEY, data.accessToken);
+    setAccessToken(data.accessToken);
+    const currentUser = await getMeRequest();
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+    setUser(currentUser);
+    return currentUser;
+  }, []);
+
   const value: AuthContextType = {
     user,
     accessToken,
@@ -102,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     register,
     logout,
+    becomeHost,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

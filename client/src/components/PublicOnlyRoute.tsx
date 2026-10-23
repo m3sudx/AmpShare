@@ -14,7 +14,7 @@ export default function PublicOnlyRoute() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/vehicles" replace />;
+    return <Navigate to="/chargers" replace />;
   }
 
   return <Outlet />;

@@ -15,11 +15,12 @@ import ManageSchedulesPage from "../pages/host/ManageSchedulesPage";
 import MyChargersPage from "../pages/host/MyChargersPage";
 import EditChargerPage from "../pages/host/EditChargerPage";
 import NotFoundPage from "../pages/NotFoundPage";
+import HostRoute from "../components/HostRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/vehicles" replace />} />
+      <Route path="/" element={<Navigate to="/chargers" replace />} />
 
       {/* Public-only authentication routes */}
       <Route element={<PublicOnlyRoute />}>
@@ -49,15 +50,20 @@ export default function AppRoutes() {
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/new" element={<VehicleFormPage />} />
           <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
-
+          
           {/* Host */}
-          <Route path="/host" element={<MyChargersPage />} />
-          <Route path="/host/chargers/new" element={<AddChargerPage />} />
-          <Route
-            path="/host/chargers/:id/schedules"
-            element={<ManageSchedulesPage />}
-          />
-          <Route path="/host/chargers/:id/edit" element={<EditChargerPage />} />
+          <Route element={<HostRoute />}>
+            <Route path="/host" element={<MyChargersPage />} />
+            <Route path="/host/chargers/new" element={<AddChargerPage />} />
+            <Route
+              path="/host/chargers/:id/schedules"
+              element={<ManageSchedulesPage />}
+            />
+            <Route
+              path="/host/chargers/:id/edit"
+              element={<EditChargerPage />}
+            />
+          </Route>
         </Route>
       </Route>
 
