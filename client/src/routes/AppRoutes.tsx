@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Route, Routes } from "react-router";
 
 import AppLayout from "../components/layout/AppLayout";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -16,13 +16,15 @@ import ChargingSessionDetailsPage from "../pages/bookings/ChargingSessionDetails
 import ChargingSessionsPage from "../pages/bookings/ChargingSessionsPage";
 import ChargersPage from "../pages/chargers/ChargersPage";
 import ChargerDetailsPage from "../pages/chargers/ChargerDetailsPage";
+import LandingPage from "../pages/LandingPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import HostRoute from "../components/HostRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/chargers" replace />} />
+      {/* Public landing page */}
+      <Route path="/" element={<LandingPage />} />
 
       {/* Public-only authentication routes */}
       <Route element={<PublicOnlyRoute />}>
