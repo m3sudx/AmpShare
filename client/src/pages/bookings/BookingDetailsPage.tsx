@@ -256,7 +256,7 @@ export default function BookingDetailsPage() {
       <header className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl font-headline">
+            <h1 className="text-2xl font-bold text-slate-900">
               {booking.charger.title}
             </h1>
             <StatusBadge status={status} />

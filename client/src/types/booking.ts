@@ -1,19 +1,26 @@
+import type { PlugType } from "./charger";
+
 export type BookingStatus =
-  | "PENDING" | "CONFIRMED" | "ACTIVE" | "COMPLETED" | "CANCELLED" | "EXPIRED";
+  | "PENDING"
+  | "CONFIRMED"
+  | "ACTIVE"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "EXPIRED";
 
 export interface BookingCharger {
   id: string;
   title: string;
   addressDescription: string;
   powerKw: number;
-  plugType: string;
+  plugType: PlugType;
 }
 
 export interface BookingVehicle {
   id: string;
   make: string;
   model: string;
-  plugType: string;
+  plugType: PlugType;
 }
 
 export interface BookingHost {
@@ -47,27 +54,23 @@ export interface CreateBookingInput {
   endTime: string; // ISO
 }
 
+export type SessionStatus = "ACTIVE" | "FINISHED";
+
 export interface ChargingSession {
   id: string;
   bookingId: string;
-  status: "ACTIVE" | "FINISHED";
-  startedAt: string;
+  status: SessionStatus;
+  startedAt: string | null;
   endedAt: string | null;
   energyDeliveredKwh: number;
   pricePerKwh: number;
   finalCost: number | null;
-  booking: {
-    startTime: string;
-    endTime: string;
-  };
+  booking: { startTime: string; endTime: string };
   charger: {
     title: string;
     addressDescription: string;
     powerKw: number;
-    plugType: string;
+    plugType: PlugType;
   };
-  vehicle: {
-    make: string;
-    model: string;
-  };
+  vehicle: { make: string; model: string };
 }

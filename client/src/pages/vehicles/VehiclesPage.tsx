@@ -14,7 +14,10 @@ import DeleteVehicleDialog from "../../components/vehicles/DeleteVehicleDialog";
 import VehicleCard from "../../components/vehicles/VehicleCard";
 import VehicleSkeleton from "../../components/vehicles/VehicleSkeleton";
 import { useToast } from "../../context";
-import { deleteVehicleRequest, getVehiclesRequest } from "../../services/vehicles.api";
+import {
+  deleteVehicleRequest,
+  getVehiclesRequest,
+} from "../../services/vehicles.api";
 import type { Vehicle } from "../../types/vehicle";
 
 export default function VehiclesPage() {
@@ -46,11 +49,12 @@ export default function VehiclesPage() {
       try {
         const data = await getVehiclesRequest();
         if (!ignore) {
-          setVehicles(data.vehicles || []);
+          setVehicles(data || []);
         }
       } catch (err: unknown) {
         if (!ignore) {
-          let msg = "Failed to load your vehicles. Please check your network connection and retry.";
+          let msg =
+            "Failed to load your vehicles. Please check your network connection and retry.";
           if (axios.isAxiosError(err) && err.response?.data?.message) {
             msg = String(err.response.data.message);
           }
@@ -86,7 +90,7 @@ export default function VehiclesPage() {
       setVehicleToDelete(null);
       showToast(
         `${vehicleToDelete.make} ${vehicleToDelete.model} was successfully removed.`,
-        "success"
+        "success",
       );
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -96,7 +100,7 @@ export default function VehiclesPage() {
             err.response.data?.message ||
             "This vehicle cannot be deleted because it is currently linked to an active booking or charging session.";
           setConflictBanner(
-            `Cannot delete ${vehicleToDelete.make} ${vehicleToDelete.model}: ${reason}`
+            `Cannot delete ${vehicleToDelete.make} ${vehicleToDelete.model}: ${reason}`,
           );
           setVehicleToDelete(null);
           return;
@@ -146,7 +150,8 @@ export default function VehiclesPage() {
             My Vehicles
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage the electric vehicles you use with AmpShare across Addis Ababa.
+            Manage the electric vehicles you use with AmpShare across Addis
+            Ababa.
           </p>
         </div>
 
@@ -174,7 +179,9 @@ export default function VehiclesPage() {
           <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
             <AlertCircle className="w-6 h-6 text-red-600" />
           </div>
-          <h3 className="text-base font-bold text-slate-900">Failed to load vehicles</h3>
+          <h3 className="text-base font-bold text-slate-900">
+            Failed to load vehicles
+          </h3>
           <p className="text-xs text-slate-500 mt-1 mb-5 max-w-sm mx-auto">
             {errorMessage}
           </p>
@@ -197,7 +204,8 @@ export default function VehiclesPage() {
             No vehicles added yet
           </h3>
           <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-2 mb-6 leading-relaxed">
-            Register your EV with AmpShare to easily discover compatible chargers, reserve slots, and charge effortlessly across Addis Ababa.
+            Register your EV with AmpShare to easily discover compatible
+            chargers, reserve slots, and charge effortlessly across Addis Ababa.
           </p>
           <Link
             to="/vehicles/new"
@@ -233,7 +241,8 @@ export default function VehiclesPage() {
                 AmpShare Plug Compatibility Guarantee
               </h4>
               <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
-                Our peer host network supports GB/T (China import), CCS 2 (Combo), and Type 2 (Mennekes) AC/DC connectors.
+                Our peer host network supports GB/T (China import), CCS 2
+                (Combo), and Type 2 (Mennekes) AC/DC connectors.
               </p>
             </div>
           </div>

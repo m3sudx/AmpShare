@@ -1,45 +1,42 @@
 import type { Booking, BookingStatus } from "../types/booking";
+import type { PlugType } from "../types/charger";
 
-export const PLUG_LABELS: Record<string, string> = {
-  TYPE_1: "Type 1",
+export const PLUG_LABELS: Record<PlugType, string> = {
+  "GB/T": "GB/T",
   TYPE_2: "Type 2",
-  CCS: "CCS",
-  CCS2: "CCS2",
-  CHADEMO: "CHAdeMO",
-  GB_T: "GB/T",
-  TESLA: "Tesla",
+  CCS2: "CCS 2",
 };
 
-export function effectiveStatus(booking: Booking, now: number): BookingStatus {
-  if (booking.status === "PENDING" && booking.expiresAt) {
-    const expiry = new Date(booking.expiresAt).getTime();
-    if (Number.isFinite(expiry) && expiry <= now) return "EXPIRED";
+// The server expires PENDING bookings lazily, so a stale PENDING one is shown as Expired.
+export function effectiveStatus(
+  booking: Pick<Booking, "status" | "expiresAt">,
+  now: number,
+): BookingStatus {
+  if (
+    booking.status === "PENDING" &&
+    booking.expiresAt &&
+    new Date(booking.expiresAt).getTime() <= now
+  ) {
+    return "EXPIRED";
   }
   return booking.status;
 }
 
-export function formatEtb(value: number): string {
-  return `${value.toLocaleString("en-ET", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} ETB`;
+export function minutesUntil(iso: string, now: number): number {
+  return Math.max(0, Math.ceil((new Date(iso).getTime() - now) / 60000));
 }
 
-export function formatDuration(start: string, end: string): string {
-  const minutes = Math.max(
-    0,
-    Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60_000),
+export function formatDuration(startIso: string, endIso: string): string {
+  const mins = Math.round(
+    (new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000,
   );
-  const hours = Math.floor(minutes / 60);
-  const remainder = minutes % 60;
-  if (hours === 0) return `${remainder} min`;
-  return remainder === 0 ? `${hours} hr` : `${hours} hr ${remainder} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h} h`;
+  return `${h} h ${m} min`;
 }
 
-export function minutesUntil(expiry: string, now: number): number {
-  return Math.max(0, Math.ceil((new Date(expiry).getTime() - now) / 60_000));
-}
+export const shortRef = (id: string) => id.slice(0, 6).toUpperCase();
 
-export function shortRef(id: string): string {
-  return id.replaceAll("-", "").slice(-8).toUpperCase();
-}
+export const formatEtb = (value: number) => `${value.toFixed(2)} ETB`;

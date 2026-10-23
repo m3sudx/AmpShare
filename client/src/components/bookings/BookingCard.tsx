@@ -14,25 +14,13 @@ import StatusBadge from "./StatusBadge";
 interface Props {
   booking: Booking;
   now: number;
-  /** "host" is the owner of the charger; only the host can confirm a booking */
-  role?: "driver" | "host";
   onCancel: (booking: Booking) => void;
-  onConfirm?: (booking: Booking) => void;
-  confirming?: boolean;
 }
 
-export default function BookingCard({
-  booking,
-  now,
-  role = "driver",
-  onCancel,
-  onConfirm,
-  confirming = false,
-}: Props) {
+export default function BookingCard({ booking, now, onCancel }: Props) {
   const status = effectiveStatus(booking, now);
   const start = new Date(booking.startTime);
   const canCancel = status === "PENDING" || status === "CONFIRMED";
-  const canConfirm = role === "host" && status === "PENDING" && !!onConfirm;
   const expiresIn =
     status === "PENDING" && booking.expiresAt
       ? minutesUntil(booking.expiresAt, now)
@@ -95,7 +83,7 @@ export default function BookingCard({
               aria-hidden="true"
             />
             <span className="truncate">
-              {role === "driver" && <>Host: {booking.host.fullName} · </>}
+              Host: {booking.host.fullName} ·{" "}
               {booking.charger.addressDescription}
             </span>
           </p>
@@ -124,16 +112,6 @@ export default function BookingCard({
             >
               View session
             </Link>
-          )}
-          {canConfirm && (
-            <button
-              type="button"
-              onClick={() => onConfirm?.(booking)}
-              disabled={confirming}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0F9468] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0c7d58] focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-70"
-            >
-              {confirming ? "Confirming..." : "Confirm"}
-            </button>
           )}
           {canCancel && (
             <button

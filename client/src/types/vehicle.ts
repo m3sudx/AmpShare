@@ -1,4 +1,6 @@
-export type PlugType = "GB/T" | "TYPE_2" | "CCS2";
+import type { PlugType } from "./charger";
+
+export type { PlugType } from "./charger";
 
 export interface Vehicle {
   id: string;
@@ -10,15 +12,6 @@ export interface Vehicle {
   createdAt: string;
 }
 
-export interface VehicleListResponse {
-  vehicles: Vehicle[];
-  count: number;
-}
-
-export interface VehicleResponse {
-  vehicle: Vehicle;
-}
-
 export interface CreateVehiclePayload {
   make: string;
   model: string;
@@ -26,32 +19,35 @@ export interface CreateVehiclePayload {
   plugType: PlugType;
 }
 
-export type UpdateVehiclePayload = Partial<CreateVehiclePayload>;
+export interface UpdateVehiclePayload {
+  make?: string;
+  model?: string;
+  batteryCapacityKwh?: number;
+  plugType?: PlugType;
+}
 
-export interface PlugTypeOption {
+export const PLUG_TYPE_OPTIONS: {
   value: PlugType;
   label: string;
   shortLabel: string;
   description: string;
-}
-
-export const PLUG_TYPE_OPTIONS: PlugTypeOption[] = [
+}[] = [
   {
     value: "GB/T",
-    label: "GB/T (DC Fast & AC)",
+    label: "GB/T",
     shortLabel: "GB/T",
-    description: "Standard connector for Chinese imported EVs (e.g., BYD, VW ID series)",
-  },
-  {
-    value: "CCS2",
-    label: "CCS 2 (Combo 2)",
-    shortLabel: "CCS 2",
-    description: "Combined AC/DC fast charging standard common on European/global EVs",
+    description: "GB/T charging connector",
   },
   {
     value: "TYPE_2",
-    label: "Type 2 (Mennekes)",
+    label: "Type 2",
     shortLabel: "Type 2",
-    description: "Standard AC charging connector for European and international vehicles",
+    description: "Type 2 charging connector",
+  },
+  {
+    value: "CCS2",
+    label: "CCS2",
+    shortLabel: "CCS2",
+    description: "Combined Charging System 2",
   },
 ];

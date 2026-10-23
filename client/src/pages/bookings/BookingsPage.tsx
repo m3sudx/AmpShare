@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link } from "react-router";
 import {
   CircleAlert,
   CircleCheck,
@@ -11,14 +11,8 @@ import {
   Zap,
 } from "lucide-react";
 import BookingCard from "../../components/bookings/BookingCard";
-import BookingsSectionNav from "../../components/bookings/BookingsSectionNav";
-import RoleToggle, { type ViewRole } from "../../components/bookings/RoleToggle";
 import { useAuth } from "../../context";
-import {
-  cancelBooking,
-  confirmBooking,
-  listBookings,
-} from "../../services/bookings.api";
+import { cancelBooking, listBookings } from "../../services/bookings.api";
 import type { Booking, BookingStatus } from "../../types/booking";
 import { effectiveStatus } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
@@ -28,18 +22,11 @@ type LoadState =
   | { status: "error"; message: string }
   | { status: "ready"; bookings: Booking[] };
 
-type TabKey =
-  | "ALL"
-  | "PENDING"
-  | "CONFIRMED"
-  | "ACTIVE"
-  | "COMPLETED"
-  | "CANCELLED";
+type TabKey = "ALL" | "UPCOMING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "ALL", label: "All" },
-  { key: "PENDING", label: "Pending" },
-  { key: "CONFIRMED", label: "Confirmed" },
+  { key: "UPCOMING", label: "Upcoming" },
   { key: "ACTIVE", label: "Active" },
   { key: "COMPLETED", label: "Completed" },
   { key: "CANCELLED", label: "Cancelled" },
@@ -49,10 +36,8 @@ function matchesTab(status: BookingStatus, tab: TabKey): boolean {
   switch (tab) {
     case "ALL":
       return true;
-    case "PENDING":
-      return status === "PENDING";
-    case "CONFIRMED":
-      return status === "CONFIRMED";
+    case "UPCOMING":
+      return status === "PENDING" || status === "CONFIRMED";
     case "ACTIVE":
       return status === "ACTIVE";
     case "COMPLETED":
@@ -60,19 +45,6 @@ function matchesTab(status: BookingStatus, tab: TabKey): boolean {
     case "CANCELLED":
       return status === "CANCELLED" || status === "EXPIRED";
   }
-}
-
-// Upcoming = still in play; past = finished, cancelled or expired
-const isUpcoming = (status: BookingStatus) =>
-  status === "PENDING" || status === "CONFIRMED" || status === "ACTIVE";
-
-function SectionHeading({ children }: { children: string }) {
-  return (
-    <h2 className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-      {children}
-      <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
-    </h2>
-  );
 }
 
 function ListSkeleton() {
@@ -181,19 +153,12 @@ export default function BookingsPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [tab, setTab] = useState<TabKey>("ALL");
-  const [searchParams] = useSearchParams();
-  const [role, setRole] = useState<ViewRole>(
-    searchParams.get("as") === "host" ? "host" : "driver",
-  );
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   // Keeps the "expires in N min" labels fresh
   useEffect(() => {
@@ -228,16 +193,13 @@ export default function BookingsPage() {
     setAttempt((n) => n + 1);
   };
 
-  // The API returns bookings where the user is the driver OR the charger's host;
-  // the toggle splits them client-side
+  // The API also returns bookings on the user's own chargers; this page is the driver view
   const mine = useMemo(
     () =>
       state.status === "ready"
-        ? state.bookings.filter((b) =>
-            role === "driver" ? b.driverId === user?.id : b.host.id === user?.id,
-          )
+        ? state.bookings.filter((b) => b.driverId === user?.id)
         : [],
-    [state, user?.id, role],
+    [state, user?.id],
   );
 
   const counts = useMemo(() => {
@@ -251,12 +213,6 @@ export default function BookingsPage() {
   }, [mine, now]);
 
   const visible = mine.filter((b) => matchesTab(effectiveStatus(b, now), tab));
-  const upcoming = visible
-    .filter((b) => isUpcoming(effectiveStatus(b, now)))
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  const past = visible
-    .filter((b) => !isUpcoming(effectiveStatus(b, now)))
-    .sort((a, b) => b.startTime.localeCompare(a.startTime));
   const pendingCount = mine.filter(
     (b) => effectiveStatus(b, now) === "PENDING",
   ).length;
@@ -296,48 +252,29 @@ export default function BookingsPage() {
     }
   }
 
-  async function handleConfirm(booking: Booking) {
-    if (confirmingId) return;
-    setConfirmingId(booking.id);
-    try {
-      const updated = await confirmBooking(booking.id);
-      setState((prev) =>
-        prev.status === "ready"
-          ? {
-              status: "ready",
-              bookings: prev.bookings.map((b) =>
-                b.id === updated.id ? updated : b,
-              ),
-            }
-          : prev,
-      );
-      setNotice("Booking confirmed.");
-    } catch (err) {
-      setNotice(null);
-      setActionError(
-        getErrorMessage(err, "We couldn't confirm this booking. Try again."),
-      );
-    } finally {
-      setConfirmingId(null);
-    }
-  }
-
-  const switchRole = (next: ViewRole) => {
-    setRole(next);
-    setTab("ALL");
-    setBannerDismissed(false);
-  };
-
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <BookingsSectionNav current="bookings" />
-            <RoleToggle value={role} onChange={switchRole} />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl font-headline">My bookings</h1>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+          <nav
+            aria-label="Bookings sections"
+            className="mb-3 flex w-fit gap-1 rounded-xl bg-slate-100 p-1 text-sm font-medium"
+          >
+            <span
+              aria-current="page"
+              className="rounded-lg bg-white px-3 py-1.5 text-slate-900 shadow-sm"
+            >
+              Bookings
+            </span>
+            <Link
+              to="/sessions"
+              className="rounded-lg px-3 py-1.5 text-slate-600 hover:text-slate-900"
+            >
+              Charging history
+            </Link>
+          </nav>
+          <h1 className="text-2xl font-bold text-slate-900">My bookings</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Track your charging reservations across Addis Ababa.
           </p>
         </div>
@@ -369,41 +306,11 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {actionError && (
-        <div
-          role="alert"
-          className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-        >
-          <span>{actionError}</span>
-          <button
-            type="button"
-            onClick={() => setActionError(null)}
-            aria-label="Dismiss message"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-      )}
-
-      {pendingCount > 0 && !bannerDismissed && (
-        <div
-          role="status"
-          className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
-        >
-          <span>
-            {pendingCount} {pendingCount === 1 ? "booking is" : "bookings are"}{" "}
-            {role === "driver"
-              ? "waiting for host confirmation."
-              : "waiting for your confirmation."}
-          </span>
-          <button
-            type="button"
-            onClick={() => setBannerDismissed(true)}
-            aria-label="Dismiss banner"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
+      {pendingCount > 0 && (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          {pendingCount} {pendingCount === 1 ? "booking is" : "bookings are"}{" "}
+          waiting for host confirmation.
+        </p>
       )}
 
       {state.status === "ready" && mine.length > 0 && (
@@ -460,21 +367,18 @@ export default function BookingsPage() {
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <Zap className="h-10 w-10 text-[#0F9468]" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-slate-900">
-            {role === "driver" ? "No bookings yet" : "No bookings on your chargers"}
+            No bookings yet
           </h2>
           <p className="max-w-md text-sm text-slate-500">
-            {role === "driver"
-              ? "Find a verified charger nearby in Addis Ababa and reserve your time slot."
-              : "When a driver books one of your chargers, the request will appear here."}
+            Find a verified charger nearby in Addis Ababa and reserve your time
+            slot.
           </p>
-          {role === "driver" && (
-            <Link
-              to="/chargers"
-              className="rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0c7d58]"
-            >
-              Find chargers
-            </Link>
-          )}
+          <Link
+            to="/chargers"
+            className="rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0c7d58]"
+          >
+            Find chargers
+          </Link>
         </div>
       )}
 
@@ -493,50 +397,21 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {state.status === "ready" && upcoming.length > 0 && (
-        <section aria-label="Upcoming bookings" className="space-y-4">
-          <SectionHeading>Upcoming</SectionHeading>
-          <ul className="space-y-4">
-            {upcoming.map((booking) => (
-              <li key={booking.id}>
-                  <BookingCard
-                    booking={booking}
-                    now={now}
-                    role={role}
-                    confirming={confirmingId === booking.id}
-                    onConfirm={handleConfirm}
-                    onCancel={(b) => {
-                      setCancelError(null);
-                      setCancelTarget(b);
-                    }}
-                  />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {state.status === "ready" && past.length > 0 && (
-        <section aria-label="Past bookings" className="space-y-4">
-          <SectionHeading>Past</SectionHeading>
-          <ul className="space-y-4">
-            {past.map((booking) => (
-              <li key={booking.id}>
-                  <BookingCard
-                    booking={booking}
-                    now={now}
-                    role={role}
-                    confirming={confirmingId === booking.id}
-                    onConfirm={handleConfirm}
-                    onCancel={(b) => {
-                      setCancelError(null);
-                      setCancelTarget(b);
-                    }}
-                  />
-              </li>
-            ))}
-          </ul>
-        </section>
+      {state.status === "ready" && visible.length > 0 && (
+        <ul className="space-y-4">
+          {visible.map((booking) => (
+            <li key={booking.id}>
+              <BookingCard
+                booking={booking}
+                now={now}
+                onCancel={(b) => {
+                  setCancelError(null);
+                  setCancelTarget(b);
+                }}
+              />
+            </li>
+          ))}
+        </ul>
       )}
 
       {cancelTarget && (
