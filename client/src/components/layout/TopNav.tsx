@@ -57,13 +57,16 @@ export default function TopNav() {
             // Highlight My Vehicles on /vehicles, /vehicles/new, and /vehicles/:id/edit
             const isVehicleActive =
               to === "/vehicles" && location.pathname.startsWith("/vehicles");
+            // Keep Bookings highlighted on the charging history pages (/sessions, /sessions/:id)
+            const isBookingsActive =
+              to === "/bookings" && location.pathname.startsWith("/sessions");
 
             return (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) => {
-                  const active = isVehicleActive || isActive;
+                  const active = isVehicleActive || isBookingsActive || isActive;
                   return [
                     "relative flex h-11 md:h-12 shrink-0 items-center px-3 sm:px-3.5",
                     "text-xs font-semibold transition-colors whitespace-nowrap",

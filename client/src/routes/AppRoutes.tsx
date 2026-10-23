@@ -7,13 +7,15 @@ import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import VehiclesPage from "../pages/vehicles/VehiclesPage";
 import VehicleFormPage from "../pages/vehicles/VehicleFormPage";
-import PlaceholderPage from "../pages/PlaceholderPage";
+import BookingsPage from "../pages/bookings/BookingsPage";
+import BookingDetailsPage from "../pages/bookings/BookingDetailsPage";
+import BookChargerPage from "../pages/bookings/BookChargerPage";
+import HostPage from "../pages/host/HostPage";
+import ChargerFormPage from "../pages/host/ChargerFormPage";
+import ChargingSessionDetailsPage from "../pages/bookings/ChargingSessionDetailsPage";
+import ChargingSessionsPage from "../pages/bookings/ChargingSessionsPage";
 import ChargersPage from "../pages/chargers/ChargersPage";
 import ChargerDetailsPage from "../pages/chargers/ChargerDetailsPage";
-import AddChargerPage from "../pages/host/AddChargerPage";
-import ManageSchedulesPage from "../pages/host/ManageSchedulesPage";
-import MyChargersPage from "../pages/host/MyChargersPage";
-import EditChargerPage from "../pages/host/EditChargerPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import HostRoute from "../components/HostRoute";
 
@@ -35,34 +37,22 @@ export default function AppRoutes() {
           <Route path="/chargers" element={<ChargersPage />} />
           <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
 
-          {/* Bookings */}
-          <Route
-            path="/bookings"
-            element={
-              <PlaceholderPage
-                title="Bookings"
-                description="View and manage your bookings."
-              />
-            }
-          />
+          {/* Booking and charging session routes */}
+          <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/bookings/:id" element={<BookingDetailsPage />} />
+          <Route path="/sessions" element={<ChargingSessionsPage />} />
+          <Route path="/sessions/:id" element={<ChargingSessionDetailsPage />} />
+          <Route path="/chargers/:id/book" element={<BookChargerPage />} />
 
           {/* Vehicles */}
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/new" element={<VehicleFormPage />} />
           <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
-          
           {/* Host */}
           <Route element={<HostRoute />}>
-            <Route path="/host" element={<MyChargersPage />} />
-            <Route path="/host/chargers/new" element={<AddChargerPage />} />
-            <Route
-              path="/host/chargers/:id/schedules"
-              element={<ManageSchedulesPage />}
-            />
-            <Route
-              path="/host/chargers/:id/edit"
-              element={<EditChargerPage />}
-            />
+            <Route path="/host" element={<HostPage />} />
+            <Route path="/host/chargers/new" element={<ChargerFormPage />} />
+            <Route path="/host/chargers/:id/edit" element={<ChargerFormPage />} />
           </Route>
         </Route>
       </Route>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import axios from "axios";
 import { AlertCircle, ArrowLeft, CarFront, Loader2 } from "lucide-react";
 import VehicleForm, { type VehicleFormValues } from "../../components/vehicles/VehicleForm";
@@ -15,6 +15,9 @@ export default function VehicleFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
   const navigate = useNavigate();
+  // Set when the driver came from the booking page, so they can go straight back to it
+  const returnTo =
+    (useLocation().state as { from?: string } | null)?.from ?? "/vehicles";
   const { showToast } = useToast();
 
   const [initialVehicle, setInitialVehicle] = useState<Vehicle | null>(null);
@@ -85,7 +88,7 @@ export default function VehicleFormPage() {
         // If nothing was modified, navigate back without request
         if (Object.keys(patchPayload).length === 0) {
           showToast("No changes were made.", "info");
-          navigate("/vehicles");
+          navigate(returnTo);
           return;
         }
 
@@ -94,7 +97,7 @@ export default function VehicleFormPage() {
           `${values.make} ${values.model} was updated successfully!`,
           "success"
         );
-        navigate("/vehicles");
+        navigate(returnTo);
       } else {
         // Create vehicle flow
         const created = await createVehicleRequest(values);
@@ -102,7 +105,7 @@ export default function VehicleFormPage() {
           `${created.make} ${created.model} was successfully registered!`,
           "success"
         );
-        navigate("/vehicles");
+        navigate(returnTo);
       }
     } catch (err: unknown) {
       let message = "An error occurred while saving the vehicle. Please try again.";

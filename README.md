@@ -6,10 +6,14 @@ Drivers can find nearby chargers, check charging compatibility and prices, reser
 
 ## Tech Stack
 
-### Frontend
-- Next.js
+### Frontend (`client/`)
+- React 19 with Vite
 - TypeScript
 - Tailwind CSS
+- React Router
+- Axios (shared instance with token interceptor)
+- TanStack Query
+- Lucide React icons
 - Leaflet / React-Leaflet
 
 ### Backend
@@ -33,7 +37,17 @@ Drivers can find nearby chargers, check charging compatibility and prices, reser
 
 ```text
 AmpShare/
-├── frontend/                    # Next.js frontend
+├── client/                      # React + Vite frontend
+│   ├── src/
+│   │   ├── components/          # Shared and feature components (bookings, chargers, vehicles)
+│   │   ├── context/             # Auth and toast providers
+│   │   ├── pages/               # Route pages (auth, chargers, bookings, vehicles)
+│   │   ├── routes/              # React Router configuration
+│   │   ├── services/            # Axios API functions (one file per backend module)
+│   │   ├── types/               # TypeScript types matching API responses
+│   │   └── utils/               # Formatting and helper functions
+│   ├── Dockerfile               # dev (hot reload) and production (nginx) targets
+│   └── nginx.conf
 ├── server/                      # Express + TypeScript API
 │   ├── src/
 │   │   ├── config/              # Database configuration
@@ -65,7 +79,7 @@ Install the following before starting development:
 - Git
 - Docker Engine
 - Docker Compose
-- Node.js and npm for frontend development outside Docker
+- Node.js 22 and npm (only needed to run the frontend or backend outside Docker)
 
 
 ## Local Setup
@@ -107,12 +121,29 @@ From the repository root:
 docker compose up --build -d
 ```
 
-Docker Compose starts two separate containers:
+Docker Compose starts three separate containers:
 
 - `server`: the AmpShare Express API
 - `db`: PostgreSQL with PostGIS enabled
+- `client`: the React + Vite frontend (hot reload)
 
 The database must become healthy before Compose starts the backend.
+
+To run the frontend outside Docker instead:
+
+```bash
+cd client
+npm ci
+npm run dev
+```
+
+Before opening a pull request, check that the client still builds and lints cleanly:
+
+```bash
+cd client
+npm run build
+npm run lint
+```
 
 ### 5. Check the running containers
 
@@ -178,6 +209,7 @@ It is executed automatically when PostgreSQL initializes an empty data directory
 
 | Service | Address |
 |---|---|
+| React client (Vite) | `http://localhost:5173` |
 | Express API | `http://localhost:3003` |
 | API health check | `http://localhost:3003/api/health` |
 | PostgreSQL from your computer | `localhost:5433` |
@@ -187,7 +219,24 @@ Inside Docker, the backend connects to PostgreSQL using the hostname `db` and po
 
 When connecting from your computer to the Docker database, use `localhost:5433`.
 
-The frontend is not yet included in Docker Compose. It can run locally and send requests to the Express API.
+The client reads the API address from `VITE_API_URL` (default `http://localhost:3003/api`), and the API allows the client origin through `CORS_ORIGIN` (default `http://localhost:5173`). Both have defaults in `compose.yaml`, so you only set them in `.env` if you change ports or deploy.
+
+## Client Routes: Bookings and Charging Sessions
+
+| Browser route | Page |
+|---|---|
+| `/chargers/:id/book` | Book a charger (vehicle, date, time, summary) |
+| `/bookings` | My bookings, as driver or as host |
+| `/bookings/:id` | Booking details |
+| `/sessions` | Charging history |
+| `/sessions/:id` | Charging session details |
+| `/host` | Host dashboard: chargers, pending requests |
+| `/host/chargers/new` | Add a charger |
+| `/host/chargers/:id/edit` | Edit a charger, set weekly hours, pause or delete |
+
+Host pages require an account with the `HOST` role. There is no endpoint yet that grants it, so for now add it in the database (see `user_roles`) and log in again.
+
+These pages use the existing booking and charging-session endpoints (`/bookings`, `/charging-sessions`) and the shared Axios instance. Booking times are validated by the API in the charger's time zone, and the API remains the authority on who can confirm, cancel, start or finish.
 
 ## 🛑 Stop the Development Environment
 
@@ -246,18 +295,18 @@ git push -u origin feature/your-feature-name
 - [x] Configure database connectivity and a health endpoint
 - [x] Add centralized error handling and a main API router
 - [x] Design the PostgreSQL + PostGIS schema
-- [x] Prepare Docker Compose for the backend and database
-- [ ] Implement authentication and user roles
-- [ ] Implement vehicle management
-- [ ] Implement charger listings and nearby searches
-- [ ] Implement recurring schedules and booking conflict protection
-- [ ] Implement charging sessions and QR check-in
+- [x] Prepare Docker Compose for the backend, database and client
+- [x] Implement authentication and user roles
+- [x] Implement vehicle management
+- [x] Implement charger listings and nearby searches
+- [x] Implement recurring schedules and booking conflict protection
+- [ ] Implement charging sessions and QR check-in (sessions done; QR check-in pending)
 - [ ] Integrate Telebirr payments and host payouts
-- [ ] Build and connect the Next.js frontend
+- [ ] Build and connect the React frontend (auth, vehicles, chargers, bookings and charging sessions in progress)
 - [ ] Add automated tests
 
 ## 📌 Project Status
 
-AmpShare is under active development. The backend foundation and database design are being prepared before the main features are implemented.
+AmpShare is under active development. The backend API covers authentication, vehicles, chargers, schedules, bookings and charging sessions, and the React frontend is being connected to it.
 
-Payment processing, QR check-in, booking flows, and the frontend are not yet complete.
+Payment processing (Telebirr), host payouts, QR check-in and automated tests are not yet complete.
