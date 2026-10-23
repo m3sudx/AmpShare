@@ -1,6 +1,8 @@
 import { Link } from "react-router";
+import { useAuth } from "../../context";
 
 export default function LandingFooter() {
+  const { isAuthenticated } = useAuth();
   return (
     <footer className="bg-[#0F1F1A] text-[#BFD8CE]">
       <div className="max-w-[1200px] mx-auto px-6 py-12 flex flex-wrap gap-7 md:gap-12 items-start justify-between">
@@ -31,7 +33,8 @@ export default function LandingFooter() {
             Find chargers
           </Link>
           <Link
-            to="/host"
+            to={isAuthenticated ? "/host" : "/login"}
+            state={!isAuthenticated ? { from: { pathname: "/host" } } : undefined}
             className="min-h-[44px] flex items-center text-[#E3F3EB] hover:text-[#0F9468] transition-colors"
           >
             Host

@@ -1,6 +1,8 @@
 import { Link } from "react-router";
+import { useAuth } from "../../context";
 
 export default function HostSection() {
+  const { isAuthenticated } = useAuth();
   return (
     <section id="hosts" className="bg-white">
       <div className="max-w-[1200px] mx-auto px-6 py-18 sm:py-24 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -187,7 +189,8 @@ export default function HostSection() {
 
           <div className="mt-8.5">
             <Link
-              to="/host"
+              to={isAuthenticated ? "/host" : "/login"}
+              state={!isAuthenticated ? { from: { pathname: "/host" } } : undefined}
               className="min-h-[54px] px-7.5 inline-flex items-center justify-center rounded-2xl bg-[#0B7A55] hover:bg-[#095F43] text-white font-semibold text-[17px] transition-colors"
             >
               Start hosting

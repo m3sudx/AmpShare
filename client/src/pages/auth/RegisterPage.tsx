@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import axios from "axios";
 import { Calendar, Eye, EyeOff, Loader2, MapPin, Zap } from "lucide-react";
 import AuthLayout from "../../components/auth/AuthLayout";
@@ -9,8 +9,15 @@ import { isValidEthiopianPhone, normalizeEthiopianPhone } from "../../utils/phon
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useAuth();
   const { showToast } = useToast();
+
+  const fromState = location.state as { from?: string | { pathname?: string } } | null;
+  const fromLocation =
+    typeof fromState?.from === "string"
+      ? fromState.from
+      : fromState?.from?.pathname || "/chargers";
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -89,7 +96,7 @@ export default function RegisterPage() {
       });
 
       showToast("Account created successfully! Welcome to AmpShare.", "success");
-      navigate("/chargers", { replace: true });
+      navigate(fromLocation, { replace: true });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 409) {
@@ -340,6 +347,7 @@ export default function RegisterPage() {
           Already have an account?{" "}
           <Link
             to="/login"
+            state={location.state}
             className="font-semibold text-slate-900 hover:text-[#0F9468] ml-1 transition-colors underline-offset-2 hover:underline"
           >
             Sign in

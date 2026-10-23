@@ -1,6 +1,8 @@
 import { Link } from "react-router";
+import { useAuth } from "../../context";
 
 export default function HeroSection() {
+  const { isAuthenticated } = useAuth();
   return (
     <section id="top" className="bg-gradient-to-b from-[#F0FAF6] to-white">
       <div className="max-w-[1200px] mx-auto px-6 py-14 sm:py-18 lg:py-20 flex flex-col lg:flex-row items-center gap-12 lg:gap-14">
@@ -42,7 +44,8 @@ export default function HeroSection() {
             </Link>
 
             <Link
-              to="/host"
+              to={isAuthenticated ? "/host" : "/login"}
+              state={!isAuthenticated ? { from: { pathname: "/host" } } : undefined}
               className="min-h-[54px] px-7 inline-flex items-center justify-center rounded-2xl bg-white hover:bg-[#F0FAF6] border-[1.5px] border-[#9BBBAE] text-[#0F1F1A] font-semibold text-[17px] transition-colors"
             >
               Become a host
