@@ -21,8 +21,8 @@ export default function LoginPage() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Where to redirect after login (default /vehicles)
-  const fromLocation = (location.state as { from?: { pathname: string } })?.from?.pathname || "/vehicles";
+  // Where to redirect after login (default /chargers)
+  const fromLocation = (location.state as { from?: { pathname: string } })?.from?.pathname || "/chargers";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

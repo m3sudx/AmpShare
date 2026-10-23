@@ -169,3 +169,20 @@ export const getCurrentUser = async (userId: string): Promise<{ user: PublicUser
 
   return { user };
 };
+
+
+
+export async function becomeHost(userId: string) {
+  await pool.query(
+    `INSERT INTO user_roles (user_id, role)
+     VALUES ($1, 'HOST')
+     ON CONFLICT (user_id, role) DO NOTHING`,
+    [userId],
+  );
+
+  const rolesResult = await pool.query(`SELECT role FROM user_roles WHERE user_id = $1`, [userId]);
+  const roles = rolesResult.rows.map((row) => row.role);
+
+  const accessToken = signAccessToken({ sub: userId, roles });
+  return { accessToken, roles };
+}
