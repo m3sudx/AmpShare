@@ -79,3 +79,15 @@ a {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* FAQ Accordion */
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details[open] .faq-plus {
+  transform: rotate(45deg);
+}

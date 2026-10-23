@@ -22,7 +22,11 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Where to redirect after login (default /chargers)
-  const fromLocation = (location.state as { from?: { pathname: string } })?.from?.pathname || "/chargers";
+  const fromState = location.state as { from?: string | { pathname?: string } } | null;
+  const fromLocation =
+    typeof fromState?.from === "string"
+      ? fromState.from
+      : fromState?.from?.pathname || "/chargers";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,6 +229,7 @@ export default function LoginPage() {
           Don't have an account?{" "}
           <Link
             to="/register"
+            state={location.state}
             className="font-semibold text-slate-900 hover:text-[#0F9468] ml-1 transition-colors underline-offset-2 hover:underline"
           >
             Create account
