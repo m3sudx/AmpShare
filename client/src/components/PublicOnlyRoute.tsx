@@ -1,9 +1,10 @@
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "../context";
 
 export default function PublicOnlyRoute() {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -14,7 +15,13 @@ export default function PublicOnlyRoute() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/chargers" replace />;
+    const fromState = location.state as { from?: string | { pathname?: string } } | null;
+    const fromLocation =
+      typeof fromState?.from === "string"
+        ? fromState.from
+        : fromState?.from?.pathname || "/chargers";
+
+    return <Navigate to={fromLocation} replace />;
   }
 
   return <Outlet />;

@@ -45,7 +45,7 @@ export default function HeroSection() {
 
             <Link
               to={isAuthenticated ? "/host" : "/login"}
-              state={!isAuthenticated ? { from: { pathname: "/host" } } : undefined}
+              state={{ from: "/host" }}
               className="min-h-[54px] px-7 inline-flex items-center justify-center rounded-2xl bg-white hover:bg-[#F0FAF6] border-[1.5px] border-[#9BBBAE] text-[#0F1F1A] font-semibold text-[17px] transition-colors"
             >
               Become a host

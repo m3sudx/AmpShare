@@ -34,7 +34,7 @@ export default function LandingFooter() {
           </Link>
           <Link
             to={isAuthenticated ? "/host" : "/login"}
-            state={!isAuthenticated ? { from: { pathname: "/host" } } : undefined}
+            state={{ from: "/host" }}
             className="min-h-[44px] flex items-center text-[#E3F3EB] hover:text-[#0F9468] transition-colors"
           >
             Host

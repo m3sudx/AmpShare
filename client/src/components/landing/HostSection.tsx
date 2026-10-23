@@ -190,7 +190,7 @@ export default function HostSection() {
           <div className="mt-8.5">
             <Link
               to={isAuthenticated ? "/host" : "/login"}
-              state={!isAuthenticated ? { from: { pathname: "/host" } } : undefined}
+              state={{ from: "/host" }}
               className="min-h-[54px] px-7.5 inline-flex items-center justify-center rounded-2xl bg-[#0B7A55] hover:bg-[#095F43] text-white font-semibold text-[17px] transition-colors"
             >
               Start hosting
