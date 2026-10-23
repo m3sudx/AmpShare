@@ -3,18 +3,27 @@ import { Navigate, Route, Routes } from "react-router";
 import AppLayout from "../components/layout/AppLayout";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PublicOnlyRoute from "../components/PublicOnlyRoute";
+import HostRoute from "../components/HostRoute";
+
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
-import PlaceholderPage from "../pages/PlaceholderPage";
+import VehiclesPage from "../pages/vehicles/VehiclesPage";
+import VehicleFormPage from "../pages/vehicles/VehicleFormPage";
 import BookingsPage from "../pages/bookings/BookingsPage";
 import BookingDetailsPage from "../pages/bookings/BookingDetailsPage";
 import BookChargerPage from "../pages/bookings/BookChargerPage";
 import ChargingSessionsPage from "../pages/bookings/ChargingSessionsPage";
+import ChargingSessionDetailsPage from "../pages/bookings/ChargingSessionDetailsPage";
+import ChargersPage from "../pages/chargers/ChargersPage";
+import ChargerDetailsPage from "../pages/chargers/ChargerDetailsPage";
+import NotFoundPage from "../pages/NotFoundPage";
+import HostPage from "../pages/host/HostPage";
+import ChargerFormPage from "../pages/host/ChargerFormPage";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/vehicles" replace />} />
+      <Route path="/" element={<Navigate to="/chargers" replace />} />
 
       {/* Public-only authentication routes */}
       <Route element={<PublicOnlyRoute />}>
@@ -25,75 +34,41 @@ export default function AppRoutes() {
       {/* Protected application routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route
-            path="/chargers"
-            element={
-              <PlaceholderPage
-                title="Find Chargers"
-                description="Discover nearby EV charging stations."
-              />
-            }
-          />
-
-          <Route path="/bookings" element={<BookingsPage />} />
-          <Route path="/bookings/:id" element={<BookingDetailsPage />} />
-          <Route path="/sessions" element={<ChargingSessionsPage />} />
+          {/* Chargers */}
+          <Route path="/chargers" element={<ChargersPage />} />
+          <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
           <Route
             path="/chargers/:chargerId/book"
             element={<BookChargerPage />}
           />
 
+          {/* Bookings and charging sessions */}
+          <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/bookings/:id" element={<BookingDetailsPage />} />
+          <Route path="/sessions" element={<ChargingSessionsPage />} />
           <Route
-            path="/vehicles"
-            element={
-              <PlaceholderPage
-                title="My Vehicles"
-                description="Manage your registered electric vehicles."
-              />
-            }
+            path="/sessions/:id"
+            element={<ChargingSessionDetailsPage />}
           />
 
-          <Route
-            path="/vehicles/new"
-            element={
-              <PlaceholderPage
-                title="Add a vehicle"
-                description="Register your electric vehicle with AmpShare."
-              />
-            }
-          />
+          {/* Vehicles */}
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/vehicles/new" element={<VehicleFormPage />} />
+          <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
 
-          <Route
-            path="/vehicles/:id/edit"
-            element={
-              <PlaceholderPage
-                title="Edit vehicle"
-                description="Update your vehicle details."
-              />
-            }
-          />
-
-          <Route
-            path="/host"
-            element={
-              <PlaceholderPage
-                title="Host"
-                description="Manage your charging listings and availability."
-              />
-            }
-          />
+          {/* Host */}
+          <Route element={<HostRoute />}>
+            <Route path="/host" element={<HostPage />} />
+            <Route path="/host/chargers/new" element={<ChargerFormPage />} />
+            <Route
+              path="/host/chargers/:id/edit"
+              element={<ChargerFormPage />}
+            />
+          </Route>
         </Route>
       </Route>
 
-      <Route
-        path="*"
-        element={
-          <PlaceholderPage
-            title="Page not found"
-            description="The page you requested does not exist."
-          />
-        }
-      />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

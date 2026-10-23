@@ -44,3 +44,18 @@ export async function getMeRequest(): Promise<User> {
   const res = await api.get<ApiResponse<MeResponseData>>("/auth/me");
   return res.data.data.user;
 }
+
+/**
+ * Adds the HOST role to the current user and returns a fresh token
+ * (roles are embedded in the JWT, so the old token is no longer enough).
+ * POST /api/auth/become-host
+ */
+export async function becomeHostRequest(): Promise<{
+  accessToken: string;
+  roles: string[];
+}> {
+  const res = await api.post<
+    ApiResponse<{ accessToken: string; roles: string[] }>
+  >("/auth/become-host");
+  return res.data.data;
+}

@@ -89,7 +89,7 @@ export default function RegisterPage() {
       });
 
       showToast("Account created successfully! Welcome to AmpShare.", "success");
-      navigate("/vehicles", { replace: true });
+      navigate("/chargers", { replace: true });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 409) {

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import * as authService from "./auth.service";
+import { AppError } from "../../utils/app-error";
 
 /**
  * Handles user registration
@@ -55,14 +56,37 @@ export const getMeHandler = async (
   try {
     const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+     throw new AppError("Authentication required", 401);
       return;
     }
 
     const result = await authService.getCurrentUser(userId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// host registration
+
+export const becomeHostHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+     throw new AppError("Authentication required", 401);
+      return;
+    }
+
+    const result = await authService.becomeHost(userId);
 
     res.status(200).json({
       success: true,
