@@ -6,7 +6,11 @@ import AvailabilityCard from "../../components/chargers/AvailabilityCard";
 import ChargerLocationMap from "../../components/chargers/ChargerLocationMap";
 import { useCharger, useChargerSchedules } from "../../hooks/useChargerDetails";
 import { getRoute } from "../../services/routing.api";
-import { formatSlot, slotsForDay, todayIndex } from "../../utils/scheduleFormat";
+import {
+  formatSlot,
+  slotsForDay,
+  todayIndex,
+} from "../../utils/scheduleFormat";
 
 const PLUG_LABEL = { "GB/T": "GB/T", TYPE_2: "Type 2", CCS2: "CCS2" } as const;
 
@@ -70,7 +74,9 @@ function Stat({
         {icon}
       </span>
       <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</div>
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          {label}
+        </div>
         <div className="text-xl font-bold text-slate-900">{children}</div>
       </div>
     </div>
@@ -95,7 +101,10 @@ export default function ChargerDetailsPage() {
   const schedulesQuery = useChargerSchedules(id);
 
   // Directions state (hooks must stay above the early returns below)
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [showRoute, setShowRoute] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
 
@@ -115,7 +124,11 @@ export default function ChargerDetailsPage() {
     if (userLocation) return;
     setLocationDenied(false);
     navigator.geolocation.getCurrentPosition(
-      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (pos) =>
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        }),
       () => {
         setLocationDenied(true);
         setShowRoute(false);
@@ -136,7 +149,8 @@ export default function ChargerDetailsPage() {
 
   if (chargerQuery.isError || !chargerQuery.data) {
     const notFound =
-      isAxiosError(chargerQuery.error) && chargerQuery.error.response?.status === 404;
+      isAxiosError(chargerQuery.error) &&
+      chargerQuery.error.response?.status === 404;
     return (
       <div className="space-y-4">
         <BackLink />
@@ -181,10 +195,14 @@ export default function ChargerDetailsPage() {
         <div className="min-w-0 space-y-6">
           <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <h1 className="text-3xl font-extrabold leading-tight text-slate-900">{c.title}</h1>
+              <h1 className="text-3xl font-extrabold leading-tight text-slate-900">
+                {c.title}
+              </h1>
               <span
                 className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  c.isActive ? "bg-[#E7F6F0] text-[#0B7A55]" : "bg-amber-100 text-amber-800"
+                  c.isActive
+                    ? "bg-[#E7F6F0] text-[#0B7A55]"
+                    : "bg-amber-100 text-amber-800"
                 }`}
               >
                 <span
@@ -198,9 +216,15 @@ export default function ChargerDetailsPage() {
               {c.addressDescription}
             </p>
             <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
-              <span className="rounded-full bg-slate-100 px-3 py-1.5">{PLUG_LABEL[c.plugType]}</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1.5">{c.powerKw} kW</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1.5">{c.timezoneName}</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5">
+                {PLUG_LABEL[c.plugType]}
+              </span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5">
+                {c.powerKw} kW
+              </span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5">
+                {c.timezoneName}
+              </span>
             </div>
           </section>
 
@@ -213,7 +237,9 @@ export default function ChargerDetailsPage() {
             </Stat>
             <Stat icon={<PriceIcon />} label="Price">
               {c.pricePerKwh.toFixed(2)}{" "}
-              <span className="text-sm font-medium text-slate-500">ETB / kWh</span>
+              <span className="text-sm font-medium text-slate-500">
+                ETB / kWh
+              </span>
             </Stat>
           </div>
 
@@ -221,7 +247,8 @@ export default function ChargerDetailsPage() {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-bold text-slate-900">Location</h2>
               <span className="text-sm text-slate-500">
-                {c.location.latitude.toFixed(4)}, {c.location.longitude.toFixed(4)}
+                {c.location.latitude.toFixed(4)},{" "}
+                {c.location.longitude.toFixed(4)}
               </span>
             </div>
 
@@ -236,7 +263,10 @@ export default function ChargerDetailsPage() {
                         ? `${(routeQuery.data.distanceMeters / 1000).toFixed(1)} km · ${Math.round(routeQuery.data.durationSeconds / 60)} min by car`
                         : null}
                 </span>
-                <button onClick={() => setShowRoute(false)} className="font-semibold underline">
+                <button
+                  onClick={() => setShowRoute(false)}
+                  className="font-semibold underline"
+                >
                   Clear route
                 </button>
               </div>
@@ -261,7 +291,8 @@ export default function ChargerDetailsPage() {
               </button>
               {locationDenied && (
                 <span className="text-sm text-amber-700">
-                  Location access was denied, so we can't draw the route from you.
+                  Location access was denied, so we can't draw the route from
+                  you.
                 </span>
               )}
             </div>
@@ -283,7 +314,9 @@ export default function ChargerDetailsPage() {
               </div>
               <div className="text-3xl font-extrabold text-[#0B7A55]">
                 {c.pricePerKwh.toFixed(2)}{" "}
-                <span className="text-base font-medium text-slate-500">ETB / kWh</span>
+                <span className="text-base font-medium text-slate-500">
+                  ETB / kWh
+                </span>
               </div>
             </div>
             <div className="h-px bg-slate-200" />
@@ -304,7 +337,7 @@ export default function ChargerDetailsPage() {
 
             {c.isActive ? (
               <Link
-                to={`/bookings/new?chargerId=${c.id}`}
+                to={`/chargers/${c.id}/book`}
                 className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#0F9468] px-4 text-base font-bold text-white hover:bg-[#0c7a56]"
               >
                 <BoltIcon />
@@ -316,7 +349,8 @@ export default function ChargerDetailsPage() {
               </div>
             )}
             <p className="text-sm leading-relaxed text-slate-500">
-              Next you will choose a vehicle and a time slot inside the hours shown on the left.
+              Next you will choose a vehicle and a time slot inside the hours
+              shown on the left.
             </p>
           </section>
         </aside>
