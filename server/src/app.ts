@@ -14,8 +14,14 @@ app.use(helmet());
 // Allow requests from the frontend
 app.use(cors());
 
-// Parse JSON request bodies
-app.use(express.json());
+// Parse JSON request bodies and retain rawBody buffer for signature verification
+app.use(
+  express.json({
+    verify: (req: express.Request & { rawBody?: Buffer }, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 
 // Database health check
