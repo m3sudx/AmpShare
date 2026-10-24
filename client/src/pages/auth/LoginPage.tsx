@@ -12,14 +12,30 @@ export default function LoginPage() {
   const location = useLocation();
   const { login } = useAuth();
 
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(() => {
+    return localStorage.getItem("ampshare_remember_phone") || "";
+  });
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    return (
+      localStorage.getItem("ampshare_remember_me") === "true" ||
+      Boolean(localStorage.getItem("ampshare_remember_phone"))
+    );
+  });
 
   const [error, setError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // If user unchecks Remember Me, clear stored credentials
+  const handleRememberChange = (checked: boolean) => {
+    setRememberMe(checked);
+    if (!checked) {
+      localStorage.removeItem("ampshare_remember_phone");
+      localStorage.removeItem("ampshare_remember_me");
+    }
+  };
 
   // Where to redirect after login (default /chargers)
   const fromState = location.state as { from?: string | { pathname?: string } } | null;
@@ -53,15 +69,20 @@ export default function LoginPage() {
 
     try {
       setIsSubmitting(true);
-      await login({
-        phoneNumber: normalizedPhone,
-        password,
-      });
+      await login(
+        {
+          phoneNumber: normalizedPhone,
+          password,
+        },
+        rememberMe
+      );
 
       if (rememberMe) {
         localStorage.setItem("ampshare_remember_phone", phone);
+        localStorage.setItem("ampshare_remember_me", "true");
       } else {
         localStorage.removeItem("ampshare_remember_phone");
+        localStorage.removeItem("ampshare_remember_me");
       }
 
       navigate(fromLocation, { replace: true });
@@ -185,23 +206,21 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Remember me & Forgot Password */}
-        <div className="flex items-center justify-between text-xs pt-0.5">
-          <label className="inline-flex items-center gap-2 text-slate-600 select-none cursor-pointer">
+        {/* Remember me */}
+        <div className="flex items-center text-xs pt-0.5">
+          <label className="inline-flex items-center gap-2 text-slate-600 select-none cursor-pointer group">
             <input
               type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
               checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              onChange={(e) => handleRememberChange(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer transition-colors"
             />
-            <span className="text-slate-700 font-medium">Remember me</span>
+            <span className="text-slate-700 font-medium group-hover:text-slate-900 transition-colors">
+              Remember me
+            </span>
           </label>
-          <span
-            className="text-slate-400 cursor-not-allowed hover:text-slate-500"
-            title="Password reset via SMS is coming soon"
-          >
-            Forgot password?
-          </span>
         </div>
 
         {/* Submit Button */}

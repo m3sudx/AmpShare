@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { TOKEN_KEY, PROFILE_KEY } from "../services/api";
+import {
+  TOKEN_KEY,
+  PROFILE_KEY,
+  getStoredToken,
+  getStoredProfile,
+} from "../services/api";
 import {
   becomeHostRequest,
   getMeRequest,
@@ -14,7 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(() => {
     try {
-      const savedProfile = localStorage.getItem(PROFILE_KEY);
+      const savedProfile = getStoredProfile();
       return savedProfile ? JSON.parse(savedProfile) : null;
     } catch {
       return null;
@@ -22,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const [accessToken, setAccessToken] = useState<string | null>(() => {
-    return localStorage.getItem(TOKEN_KEY);
+    return getStoredToken();
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -30,6 +35,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(PROFILE_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(PROFILE_KEY);
     setAccessToken(null);
     setUser(null);
   }, []);
@@ -39,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     let isMounted = true;
 
     async function restoreSession() {
-      const storedToken = localStorage.getItem(TOKEN_KEY);
+      const storedToken = getStoredToken();
       if (!storedToken) {
         if (isMounted) {
           setIsLoading(false);
@@ -52,7 +59,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const currentUser = await getMeRequest();
         if (isMounted) {
           setUser(currentUser);
-          localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+          if (localStorage.getItem(TOKEN_KEY)) {
+            localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+          } else {
+            sessionStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+          }
         }
       } catch {
         // If token is expired or invalid, clear sensitive auth state
@@ -80,33 +91,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [logout]);
 
-  const login = useCallback(async (payload: LoginPayload): Promise<User> => {
-    const data = await loginRequest(payload);
-    // Sensitive handling: never log or expose raw tokens
-    localStorage.setItem(TOKEN_KEY, data.accessToken);
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
-    setAccessToken(data.accessToken);
-    setUser(data.user);
-    return data.user;
-  }, []);
+  const login = useCallback(
+    async (payload: LoginPayload, rememberMe: boolean = true): Promise<User> => {
+      const data = await loginRequest(payload);
+      // If rememberMe is true, persist token across browser restarts in localStorage.
+      // If rememberMe is false, store token in sessionStorage so closing the browser tab logs out.
+      if (rememberMe) {
+        localStorage.setItem(TOKEN_KEY, data.accessToken);
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(PROFILE_KEY);
+      } else {
+        sessionStorage.setItem(TOKEN_KEY, data.accessToken);
+        sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(PROFILE_KEY);
+      }
 
-  const register = useCallback(async (payload: RegisterPayload): Promise<User> => {
-    const data = await registerRequest(payload);
-    localStorage.setItem(TOKEN_KEY, data.accessToken);
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
-    setAccessToken(data.accessToken);
-    setUser(data.user);
-    return data.user;
-  }, []);
+      setAccessToken(data.accessToken);
+      setUser(data.user);
+      return data.user;
+    },
+    []
+  );
+
+  const register = useCallback(
+    async (payload: RegisterPayload): Promise<User> => {
+      const data = await registerRequest(payload);
+      localStorage.setItem(TOKEN_KEY, data.accessToken);
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(PROFILE_KEY);
+      setAccessToken(data.accessToken);
+      setUser(data.user);
+      return data.user;
+    },
+    []
+  );
 
   // Adds the HOST role. Roles live inside the JWT, so swap in the fresh token
   // first, then reload the profile with the new roles.
   const becomeHost = useCallback(async (): Promise<User> => {
     const data = await becomeHostRequest();
-    localStorage.setItem(TOKEN_KEY, data.accessToken);
+    if (localStorage.getItem(TOKEN_KEY)) {
+      localStorage.setItem(TOKEN_KEY, data.accessToken);
+    } else {
+      sessionStorage.setItem(TOKEN_KEY, data.accessToken);
+    }
     setAccessToken(data.accessToken);
     const currentUser = await getMeRequest();
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+    if (localStorage.getItem(TOKEN_KEY)) {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+    } else {
+      sessionStorage.setItem(PROFILE_KEY, JSON.stringify(currentUser));
+    }
     setUser(currentUser);
     return currentUser;
   }, []);
