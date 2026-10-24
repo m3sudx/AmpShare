@@ -19,12 +19,16 @@ const COLS = `b.id, b.driver_id, b.charger_id, b.vehicle_id, b.status, b.start_t
   c.title AS charger_title, c.address_description AS charger_address,
   c.power_kw AS charger_power_kw, c.plug_type AS charger_plug_type,
   v.make AS vehicle_make, v.model AS vehicle_model, v.plug_type AS vehicle_plug_type,
-  h.id AS host_id, h.full_name AS host_name`;
+  h.id AS host_id, h.full_name AS host_name,
+  d.id AS driver_user_id, d.full_name AS driver_name, d.phone_number AS driver_phone,
+  cs.id AS session_id`;
 
 const FROM = `FROM bookings b
   JOIN chargers c ON c.id = b.charger_id
   JOIN vehicles v ON v.id = b.vehicle_id
-  JOIN users h ON h.id = c.host_id`;
+  JOIN users h ON h.id = c.host_id
+  JOIN users d ON d.id = b.driver_id
+  LEFT JOIN charging_sessions cs ON cs.booking_id = b.id`;
 
 function toBooking(row: any) {
   return {
@@ -32,6 +36,7 @@ function toBooking(row: any) {
     driverId: row.driver_id,
     chargerId: row.charger_id,
     vehicleId: row.vehicle_id,
+    sessionId: row.session_id ?? null,
     status: row.status,
     startTime: row.start_time,
     endTime: row.end_time,
@@ -58,6 +63,11 @@ function toBooking(row: any) {
       plugType: row.vehicle_plug_type,
     },
     host: { id: row.host_id, fullName: row.host_name },
+    driver: {
+      id: row.driver_user_id || row.driver_id,
+      fullName: row.driver_name,
+      phoneNumber: row.driver_phone,
+    },
   };
 }
 

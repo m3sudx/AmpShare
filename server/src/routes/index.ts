@@ -6,6 +6,8 @@ import schedulesRouter from "../modules/schedules/schedules.routes";
 import bookingsRoutes from "../modules/bookings/bookings.routes";
 import chargingSessionsRoutes from "../modules/charging-sessions/charging-sessions.routes";
 import notificationsRoutes from "../modules/notifications/notifications.routes";
+import paymentsRoutes from "../modules/payments/payments.routes";
+import hostPayoutsRoutes from "../modules/host-payouts/host-payouts.routes";
 
 const apiRouters = Router();
 
@@ -16,5 +18,7 @@ apiRouters.use("/", schedulesRouter);
 apiRouters.use("/bookings", bookingsRoutes);
 apiRouters.use("/charging-sessions", chargingSessionsRoutes);
 apiRouters.use("/notifications", notificationsRoutes);
+apiRouters.use("/payments", paymentsRoutes);
+apiRouters.use("/host-payouts", hostPayoutsRoutes);
 
 export default apiRouters;

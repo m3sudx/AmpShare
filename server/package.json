@@ -8,7 +8,11 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate": "tsx src/scripts/migrate.ts",
+    "seed:demo": "tsx src/scripts/seed-demo-data.ts",
+    "demo:payment": "tsx src/scripts/demo-payment-flow.ts",
+    "test": "tsx src/tests/payments.test.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

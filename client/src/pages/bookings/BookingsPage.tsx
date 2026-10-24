@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import {
   CircleAlert,
   CircleCheck,
+  Inbox,
   Loader2,
   Plus,
   RefreshCw,
   TriangleAlert,
+  User,
   X,
   Zap,
 } from "lucide-react";
 import BookingCard from "../../components/bookings/BookingCard";
 import { useAuth } from "../../context";
-import { cancelBooking, listBookings } from "../../services/bookings.api";
+import { cancelBooking, confirmBooking, listBookings } from "../../services/bookings.api";
 import type { Booking, BookingStatus } from "../../types/booking";
 import { effectiveStatus } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
@@ -65,6 +67,7 @@ interface CancelDialogProps {
   booking: Booking;
   busy: boolean;
   error: string | null;
+  isHostView?: boolean;
   onKeep: () => void;
   onConfirm: () => void;
 }
@@ -73,6 +76,7 @@ function CancelDialog({
   booking,
   busy,
   error,
+  isHostView = false,
   onKeep,
   onConfirm,
 }: CancelDialogProps) {
@@ -105,11 +109,12 @@ function CancelDialog({
               id="cancel-title"
               className="text-lg font-semibold text-slate-900"
             >
-              Cancel this booking?
+              {isHostView ? "Reject this booking request?" : "Cancel this booking?"}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              {booking.charger.title} will be released for other drivers. This
-              action cannot be undone.
+              {isHostView
+                ? `The reservation request on ${booking.charger.title} will be rejected and the schedule slot released.`
+                : `${booking.charger.title} will be released for other drivers. This action cannot be undone.`}
             </p>
           </div>
         </div>
@@ -130,7 +135,7 @@ function CancelDialog({
             disabled={busy}
             className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
           >
-            Keep booking
+            {isHostView ? "Keep request" : "Keep booking"}
           </button>
           <button
             type="button"
@@ -141,7 +146,13 @@ function CancelDialog({
             {busy && (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             )}
-            {busy ? "Cancelling..." : "Cancel booking"}
+            {busy
+              ? isHostView
+                ? "Rejecting..."
+                : "Cancelling..."
+              : isHostView
+              ? "Reject booking"
+              : "Cancel booking"}
           </button>
         </div>
       </div>
@@ -152,11 +163,16 @@ function CancelDialog({
 export default function BookingsPage() {
   const { user } = useAuth();
   usePageTitle("My bookings");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isHostUser = !!user?.roles.includes("HOST");
+  const isHostMode = searchParams.get("as") === "host" && isHostUser;
+
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [tab, setTab] = useState<TabKey>("ALL");
   const [now, setNow] = useState(() => Date.now());
 
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -195,27 +211,28 @@ export default function BookingsPage() {
     setAttempt((n) => n + 1);
   };
 
-  // The API also returns bookings on the user's own chargers; this page is the driver view
-  const mine = useMemo(
-    () =>
-      state.status === "ready"
-        ? state.bookings.filter((b) => b.driverId === user?.id)
-        : [],
-    [state, user?.id],
-  );
+  // Filter based on active view mode: Host Requests vs Driver Reservations
+  const activeBookings = useMemo(() => {
+    if (state.status !== "ready") return [];
+    return isHostMode
+      ? state.bookings.filter((b) => b.host.id === user?.id)
+      : state.bookings.filter((b) => b.driverId === user?.id);
+  }, [state, user?.id, isHostMode]);
 
   const counts = useMemo(() => {
     const result = {} as Record<TabKey, number>;
     for (const t of TABS) {
-      result[t.key] = mine.filter((b) =>
+      result[t.key] = activeBookings.filter((b) =>
         matchesTab(effectiveStatus(b, now), t.key),
       ).length;
     }
     return result;
-  }, [mine, now]);
+  }, [activeBookings, now]);
 
-  const visible = mine.filter((b) => matchesTab(effectiveStatus(b, now), tab));
-  const pendingCount = mine.filter(
+  const visible = activeBookings.filter((b) =>
+    matchesTab(effectiveStatus(b, now), tab),
+  );
+  const pendingCount = activeBookings.filter(
     (b) => effectiveStatus(b, now) === "PENDING",
   ).length;
 
@@ -223,6 +240,32 @@ export default function BookingsPage() {
     setCancelTarget(null);
     setCancelError(null);
   };
+
+  async function handleConfirmBooking(booking: Booking) {
+    if (confirmingId) return;
+    setConfirmingId(booking.id);
+    setNotice(null);
+    try {
+      const updated = await confirmBooking(booking.id);
+      setState((prev) =>
+        prev.status === "ready"
+          ? {
+              status: "ready",
+              bookings: prev.bookings.map((b) =>
+                b.id === updated.id ? updated : b,
+              ),
+            }
+          : prev,
+      );
+      setNotice(`Booking request on ${booking.charger.title} has been approved!`);
+    } catch (err) {
+      setNotice(
+        getErrorMessage(err, "We couldn't approve this booking. Please try again."),
+      );
+    } finally {
+      setConfirmingId(null);
+    }
+  }
 
   async function handleConfirmCancel() {
     if (!cancelTarget || cancelling) return;
@@ -241,12 +284,14 @@ export default function BookingsPage() {
           : prev,
       );
       setCancelTarget(null);
-      setNotice("Booking cancelled.");
+      setNotice(isHostMode ? "Booking request rejected." : "Booking cancelled.");
     } catch (err) {
       setCancelError(
         getErrorMessage(
           err,
-          "We couldn't cancel this booking. Please try again.",
+          isHostMode
+            ? "We couldn't reject this booking. Please try again."
+            : "We couldn't cancel this booking. Please try again.",
         ),
       );
     } finally {
@@ -258,35 +303,79 @@ export default function BookingsPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <nav
-            aria-label="Bookings sections"
-            className="mb-3 flex w-fit gap-1 rounded-xl bg-slate-100 p-1 text-sm font-medium"
-          >
-            <span
-              aria-current="page"
-              className="rounded-lg bg-white px-3 py-1.5 text-slate-900 shadow-sm"
+          <div className="mb-3 flex flex-wrap gap-2">
+            <nav
+              aria-label="Bookings sections"
+              className="flex w-fit gap-1 rounded-xl bg-slate-100 p-1 text-sm font-medium"
             >
-              Bookings
-            </span>
-            <Link
-              to="/sessions"
-              className="rounded-lg px-3 py-1.5 text-slate-600 hover:text-slate-900"
-            >
-              Charging history
-            </Link>
-          </nav>
-          <h1 className="text-2xl font-bold text-slate-900">My bookings</h1>
+              <span
+                aria-current="page"
+                className="rounded-lg bg-white px-3 py-1.5 text-slate-900 shadow-sm"
+              >
+                Bookings
+              </span>
+              <Link
+                to="/sessions"
+                className="rounded-lg px-3 py-1.5 text-slate-600 hover:text-slate-900"
+              >
+                Charging history
+              </Link>
+            </nav>
+
+            {/* Host / Driver View Toggle */}
+            {isHostUser && (
+              <div className="flex w-fit gap-1 rounded-xl bg-emerald-50/80 p-1 text-sm font-medium border border-emerald-100">
+                <button
+                  type="button"
+                  onClick={() => setSearchParams({})}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                    !isHostMode
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  My Bookings (Driver)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchParams({ as: "host" })}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                    isHostMode
+                      ? "bg-[#0F9468] text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Inbox className="h-3.5 w-3.5" />
+                  Host Requests
+                  {state.status === "ready" && (
+                    <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.2 text-[10px] text-emerald-800">
+                      {state.bookings.filter((b) => b.host.id === user?.id && b.status === "PENDING").length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <h1 className="text-2xl font-bold text-slate-900">
+            {isHostMode ? "Host Booking Requests" : "My bookings"}
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Track your charging reservations across Addis Ababa.
+            {isHostMode
+              ? "Review and approve driver reservations for your charging stations."
+              : "Track your charging reservations across Addis Ababa."}
           </p>
         </div>
-        <Link
-          to="/chargers"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0c7d58] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Book a charger
-        </Link>
+        {!isHostMode && (
+          <Link
+            to="/chargers"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0c7d58] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Book a charger
+          </Link>
+        )}
       </header>
 
       {notice && (
@@ -315,7 +404,7 @@ export default function BookingsPage() {
         </p>
       )}
 
-      {state.status === "ready" && mine.length > 0 && (
+      {state.status === "ready" && activeBookings.length > 0 && (
         <div
           role="tablist"
           aria-label="Filter bookings"
@@ -365,26 +454,29 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {state.status === "ready" && mine.length === 0 && (
+      {state.status === "ready" && activeBookings.length === 0 && (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <Zap className="h-10 w-10 text-[#0F9468]" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-slate-900">
-            No bookings yet
+            {isHostMode ? "No host booking requests" : "No bookings yet"}
           </h2>
           <p className="max-w-md text-sm text-slate-500">
-            Find a verified charger nearby in Addis Ababa and reserve your time
-            slot.
+            {isHostMode
+              ? "When drivers reserve a slot on your chargers, their requests will appear here for you to confirm."
+              : "Find a verified charger nearby in Addis Ababa and reserve your time slot."}
           </p>
-          <Link
-            to="/chargers"
-            className="rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0c7d58]"
-          >
-            Find chargers
-          </Link>
+          {!isHostMode && (
+            <Link
+              to="/chargers"
+              className="rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0c7d58]"
+            >
+              Find chargers
+            </Link>
+          )}
         </div>
       )}
 
-      {state.status === "ready" && mine.length > 0 && visible.length === 0 && (
+      {state.status === "ready" && activeBookings.length > 0 && visible.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <h2 className="text-lg font-semibold text-slate-900">
             No {TABS.find((t) => t.key === tab)?.label.toLowerCase()} bookings
@@ -406,6 +498,9 @@ export default function BookingsPage() {
               <BookingCard
                 booking={booking}
                 now={now}
+                isHostView={isHostMode}
+                onConfirm={handleConfirmBooking}
+                confirming={confirmingId === booking.id}
                 onCancel={(b) => {
                   setCancelError(null);
                   setCancelTarget(b);
@@ -421,6 +516,7 @@ export default function BookingsPage() {
           booking={cancelTarget}
           busy={cancelling}
           error={cancelError}
+          isHostView={isHostMode}
           onKeep={closeDialog}
           onConfirm={handleConfirmCancel}
         />

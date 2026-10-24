@@ -32,6 +32,13 @@ export default function TopNav() {
   };
 
   const displayPhone = formatPhoneDisplay(user?.phoneNumber) || "";
+  const displayPhone = formatPhoneDisplay(user?.phoneNumber) || "+251 91 234 5678";
+  const isAdmin = user?.roles.includes("ADMIN");
+
+  const items = [
+    ...navItems,
+    ...(isAdmin ? [{ to: "/admin/payouts", label: "Admin Payouts", Icon: Zap }] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
@@ -56,7 +63,7 @@ export default function TopNav() {
           aria-label="Main navigation"
           className="no-scrollbar order-3 -mx-1 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 py-2 md:order-0 md:mx-0 md:ml-10 md:w-auto md:border-t-0 md:py-0"
         >
-          {navItems.map(({ to, label, Icon }) => {
+          {items.map(({ to, label }) => {
             // Highlight My Vehicles on /vehicles, /vehicles/new, and /vehicles/:id/edit
             const isVehicleActive =
               to === "/vehicles" && location.pathname.startsWith("/vehicles");

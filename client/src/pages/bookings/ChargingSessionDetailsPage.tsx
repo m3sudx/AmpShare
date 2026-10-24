@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import { CircleAlert, CircleCheck, RefreshCw, X, Zap } from "lucide-react";
 import FinishSessionDialog from "../../components/bookings/FinishSessionDialog";
 import StatusBadge from "../../components/bookings/StatusBadge";
+import PaymentSection from "../../components/payments/PaymentSection";
 import { useAuth } from "../../context";
 import { finishSession, getBooking, getSession } from "../../services/bookings.api";
 import type { Booking, ChargingSession } from "../../types/booking";
@@ -70,6 +71,17 @@ export default function ChargingSessionDetailsPage() {
   const retry = () => {
     setState({ status: "loading" });
     setAttempt((n) => n + 1);
+  };
+
+  const refreshQuietly = () => {
+    if (!id) return;
+    getSession(id)
+      .then(async (session) => {
+        const booking = await getBooking(session.bookingId);
+        setNow(Date.now());
+        setState({ status: "ready", session, booking });
+      })
+      .catch(() => {});
   };
 
   const isActive = state.status === "ready" && state.session.status === "ACTIVE";
@@ -264,6 +276,16 @@ export default function ChargingSessionDetailsPage() {
           </p>
         )}
       </section>
+
+      {session.status === "FINISHED" && session.finalCost !== null && (
+        <PaymentSection
+          bookingId={booking.id}
+          finalCost={session.finalCost}
+          isDriver={booking.driverId === user?.id}
+          defaultPhone={user?.phoneNumber}
+          onPaymentSuccess={refreshQuietly}
+        />
+      )}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900">Session details</h2>

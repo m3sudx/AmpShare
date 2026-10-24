@@ -251,10 +251,10 @@ export default function ChargingSessionsPage() {
                 </p>
               </div>
               <Link
-                to={`/bookings/${s.bookingId}`}
+                to={`/sessions/${s.id}`}
                 className="rounded-xl bg-[#0F9468] px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-[#0c7d58]"
               >
-                View booking
+                Manage session
               </Link>
             </section>
           ))}
@@ -381,10 +381,10 @@ export default function ChargingSessionsPage() {
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <Link
-                          to={`/bookings/${s.bookingId}`}
+                          to={`/sessions/${s.id}`}
                           className="font-semibold text-[#0F9468] hover:underline"
                         >
-                          View booking
+                          View session
                         </Link>
                       </td>
                     </tr>
