@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
+  Banknote,
   CalendarClock,
+  CheckCircle2,
   CircleAlert,
   CircleCheck,
+  Clock,
   Inbox,
   MapPin,
   Pencil,
@@ -17,12 +20,14 @@ import NotHostNotice from "../../components/host/NotHostNotice";
 import { useAuth } from "../../context";
 import { listBookings } from "../../services/bookings.api";
 import { listMyChargers, updateCharger } from "../../services/chargers.api";
+import { getMyEarnings } from "../../services/host-payouts.api";
 import { listSchedules } from "../../services/schedules.api";
 import type { Booking } from "../../types/booking";
 import type { Charger } from "../../types/charger";
-import { effectiveStatus, PLUG_LABELS } from "../../utils/booking";
+import type { HostEarningsSummary } from "../../types/payment";
+import { effectiveStatus, formatEtb, PLUG_LABELS } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
-import { formatPrice } from "../../utils/format";
+import { formatDate, formatPrice } from "../../utils/format";
 
 type LoadState =
   | { status: "loading" }
@@ -32,6 +37,7 @@ type LoadState =
       chargers: Charger[];
       bookings: Booking[];
       windowCounts: Record<string, number>;
+      earnings: HostEarningsSummary | null;
     };
 
 function Skeleton() {
@@ -62,8 +68,8 @@ export default function HostPage() {
   useEffect(() => {
     if (!isHost) return;
     let cancelled = false;
-    Promise.all([listMyChargers(), listBookings()])
-      .then(async ([chargers, bookings]) => {
+    Promise.all([listMyChargers(), listBookings(), getMyEarnings().catch(() => null)])
+      .then(async ([chargers, bookings, earnings]) => {
         // How many weekly hour windows each charger has (none = drivers cannot book it)
         const counts = await Promise.all(
           chargers.map((c) =>
@@ -79,6 +85,7 @@ export default function HostPage() {
             chargers,
             bookings,
             windowCounts: Object.fromEntries(counts),
+            earnings,
           });
         }
       })
@@ -208,7 +215,7 @@ export default function HostPage() {
 
       {state.status === "ready" && (
         <>
-          <section aria-label="Summary" className="grid gap-4 sm:grid-cols-3">
+          <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between">
                 <p className="text-xs font-semibold uppercase text-slate-500">Chargers</p>
@@ -243,6 +250,18 @@ export default function HostPage() {
               <p className="mt-2 text-3xl font-bold text-slate-900">{upcoming}</p>
               <p className="text-sm text-slate-500">Confirmed or charging now</p>
             </Link>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between">
+                <p className="text-xs font-semibold uppercase text-slate-500">Total Earnings</p>
+                <Banknote className="h-6 w-6 text-[#0F9468]" aria-hidden="true" />
+              </div>
+              <p className="mt-2 text-3xl font-bold text-slate-900">
+                {formatEtb(state.earnings?.summary.totalEarnings ?? 0)}
+              </p>
+              <p className="text-sm text-slate-500">
+                {formatEtb(state.earnings?.summary.pendingPayoutAmount ?? 0)} pending payout
+              </p>
+            </div>
           </section>
 
           {state.chargers.length === 0 ? (
@@ -335,6 +354,89 @@ export default function HostPage() {
               </ul>
             </section>
           )}
+
+          {/* Host Earnings & Payouts */}
+          <section aria-label="Earnings & Payouts" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Earnings & Payout Status
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Payments collected by AmpShare and transferred to your Telebirr wallet
+                </p>
+              </div>
+              <span className="text-xs font-medium text-slate-500">
+                Commission: 0% (Initial launch)
+              </span>
+            </div>
+
+            {(!state.earnings || state.earnings.payouts.length === 0) ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 text-sm">
+                No charging session earnings recorded yet. When drivers finish charging and pay, your earnings appear here.
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+                      <tr>
+                        <th className="px-5 py-3">Station</th>
+                        <th className="px-5 py-3">Gross Total</th>
+                        <th className="px-5 py-3">Net Payout</th>
+                        <th className="px-5 py-3">Driver Payment</th>
+                        <th className="px-5 py-3">Payout Status</th>
+                        <th className="px-5 py-3">Payout Ref</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {state.earnings.payouts.map((p) => (
+                        <tr key={p.id} className="hover:bg-slate-50/50">
+                          <td className="px-5 py-3.5 font-medium text-slate-900">
+                            {p.chargerTitle || "Charger Station"}
+                            <div className="text-xs text-slate-400">
+                              {formatDate(p.createdAt)}
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5">{formatEtb(p.amount)}</td>
+                          <td className="px-5 py-3.5 font-semibold text-slate-900">
+                            {formatEtb(p.netAmount)}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {p.customerPaymentStatus === "SUCCEEDED" ? (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Verified
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
+                                <Clock className="h-3.5 w-3.5" />
+                                Awaiting Driver
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {p.status === "PAID" ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                                Paid Out
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
+                                Pending Payout
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 font-mono text-xs text-slate-500">
+                            {p.providerReference || "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
         </>
       )}
     </div>
