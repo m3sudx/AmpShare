@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
 import {
   Bell,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context";
 import { formatPhoneDisplay } from "../../utils/phone";
+import LogoutConfirmDialog from "./LogoutConfirmDialog";
 
 const navItems = [
   { to: "/chargers", label: "Find Chargers", Icon: MapPin },
@@ -21,8 +23,10 @@ export default function TopNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
+    setShowLogoutConfirm(false);
     logout();
     navigate("/login", { replace: true });
   };
@@ -111,7 +115,7 @@ export default function TopNav() {
           {/* Sign Out Button */}
           <button
             type="button"
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             title="Sign out"
             aria-label="Sign out"
             className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer shrink-0"
@@ -120,6 +124,13 @@ export default function TopNav() {
           </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Verification Dialog */}
+      <LogoutConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+      />
     </header>
   );
 }

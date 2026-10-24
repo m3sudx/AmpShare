@@ -15,10 +15,18 @@ export const api = axios.create({
   },
 });
 
+export function getStoredToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+}
+
+export function getStoredProfile(): string | null {
+  return localStorage.getItem(PROFILE_KEY) || sessionStorage.getItem(PROFILE_KEY);
+}
+
 // Attach Authorization Bearer token to all protected API calls
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getStoredToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -32,9 +40,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      if (localStorage.getItem(TOKEN_KEY)) {
+      if (getStoredToken()) {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(PROFILE_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(PROFILE_KEY);
         window.dispatchEvent(new Event("auth:logout"));
       }
     }
