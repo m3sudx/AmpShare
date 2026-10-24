@@ -5,12 +5,16 @@ import { Link, useParams } from "react-router";
 import AvailabilityCard from "../../components/chargers/AvailabilityCard";
 import ChargerLocationMap from "../../components/chargers/ChargerLocationMap";
 import { useCharger, useChargerSchedules } from "../../hooks/useChargerDetails";
+import { useChargerLive } from "../../hooks/useChargerLive"; 
 import { getRoute } from "../../services/routing.api";
 import {
   formatSlot,
   slotsForDay,
   todayIndex,
 } from "../../utils/scheduleFormat";
+
+import { usePageTitle } from "../../hooks/usePageTitle";
+
 
 const PLUG_LABEL = { "GB/T": "GB/T", TYPE_2: "Type 2", CCS2: "CCS2" } as const;
 
@@ -100,6 +104,9 @@ export default function ChargerDetailsPage() {
   const chargerQuery = useCharger(id);
   const schedulesQuery = useChargerSchedules(id);
 
+  // Live updates: refetch when the host edits this charger or a booking changes its slots
+  useChargerLive(id); // NEW
+
   // Directions state (hooks must stay above the early returns below)
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -118,6 +125,8 @@ export default function ChargerDetailsPage() {
       }),
     enabled: showRoute && !!userLocation && !!charger,
   });
+
+  usePageTitle(chargerQuery.data?.title);
 
   function handleDirections() {
     setShowRoute(true);

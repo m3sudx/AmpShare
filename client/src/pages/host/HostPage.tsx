@@ -23,6 +23,7 @@ import type { Charger } from "../../types/charger";
 import { effectiveStatus, PLUG_LABELS } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
 import { formatPrice } from "../../utils/format";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -50,6 +51,7 @@ function Skeleton() {
 }
 
 export default function HostPage() {
+  usePageTitle("Host dashboard");
   const { user } = useAuth();
   const isHost = !!user?.roles.includes("HOST");
   const [state, setState] = useState<LoadState>({ status: "loading" });

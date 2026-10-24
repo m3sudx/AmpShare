@@ -1,8 +1,10 @@
 import { isAxiosError } from "axios";
 import { useState } from "react";
-import { useAuth } from "../../context/useAuth"; // adjust to where your useAuth hook lives
+import { useAuth } from "../../context/useAuth"; 
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function BecomeHostPage() {
+  usePageTitle("Become a host");
   const { becomeHost } = useAuth();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

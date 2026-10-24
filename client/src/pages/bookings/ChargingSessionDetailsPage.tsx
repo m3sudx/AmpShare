@@ -11,6 +11,7 @@ import { getErrorMessage } from "../../utils/errors";
 import { formatDate, formatPrice, formatTime } from "../../utils/format";
 import { formatElapsed, formatHoursMinutesText } from "../../utils/session";
 import { isAxiosError } from "axios";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -28,6 +29,7 @@ function Skeleton() {
 }
 
 export default function ChargingSessionDetailsPage() {
+  usePageTitle("Session details");
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [state, setState] = useState<LoadState>({ status: "loading" });

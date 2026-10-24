@@ -19,8 +19,10 @@ import {
   getVehiclesRequest,
 } from "../../services/vehicles.api";
 import type { Vehicle } from "../../types/vehicle";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function VehiclesPage() {
+  usePageTitle("My vehicles");
   const { showToast } = useToast();
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);

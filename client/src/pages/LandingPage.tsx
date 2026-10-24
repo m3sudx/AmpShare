@@ -6,8 +6,10 @@ import HostSection from "../components/landing/HostSection";
 import CtaSection from "../components/landing/CtaSection";
 import FaqSection from "../components/landing/FaqSection";
 import LandingFooter from "../components/landing/LandingFooter";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function LandingPage() {
+  usePageTitle();
   return (
     <div className="w-full bg-white text-[#0F1F1A] font-['Inter',system-ui,sans-serif] text-[17px] leading-[1.6]">
       <LandingNav />

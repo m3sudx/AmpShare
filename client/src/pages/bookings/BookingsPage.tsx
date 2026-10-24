@@ -16,6 +16,7 @@ import { cancelBooking, listBookings } from "../../services/bookings.api";
 import type { Booking, BookingStatus } from "../../types/booking";
 import { effectiveStatus } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -150,6 +151,7 @@ function CancelDialog({
 
 export default function BookingsPage() {
   const { user } = useAuth();
+  usePageTitle("My bookings");
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [tab, setTab] = useState<TabKey>("ALL");

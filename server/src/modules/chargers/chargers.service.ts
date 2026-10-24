@@ -1,5 +1,6 @@
 import { pool } from "../../config/db";
 import type { QueryResultRow } from "pg";
+import { announceAvailability, announceChargersChanged } from "../../socket";
 import type {
   CreateChargerInput,
   ListChargersQuery,
@@ -461,7 +462,13 @@ export async function updateCharger(
   const result = await pool.query<ChargerRow>(sql, values);
   const row = result.rows[0];
 
-  return row ? mapChargerRow(row) : null;
+  if (!row) return null;
+
+  // Live update: viewers of this charger and everyone browsing the list refetch
+  announceAvailability(row.id, "CHARGER_UPDATED");
+  announceChargersChanged(row.id);
+
+  return mapChargerRow(row);
 }
 
 // ---------- DELETE /api/chargers/:id ----------
@@ -486,7 +493,13 @@ export async function deleteCharger(
       [id, hostId]
     );
 
-    return result.rowCount === 0 ? "not_found" : "deleted";
+    if (result.rowCount === 0) return "not_found";
+
+    // Live update: the charger no longer exists
+    announceAvailability(id, "CHARGER_UPDATED");
+    announceChargersChanged(id);
+
+    return "deleted";
   } catch (error) {
     // 23503 = foreign_key_violation: a booking still references this charger.
     if (isForeignKeyViolation(error)) {

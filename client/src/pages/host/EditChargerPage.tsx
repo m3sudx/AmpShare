@@ -8,6 +8,7 @@ import { z } from "zod";
 import LocationPicker from "../../components/chargers/LocationPicker";
 import { useCharger } from "../../hooks/useChargerDetails";
 import { updateCharger } from "../../services/chargers.api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const num = (max: number, label: string) =>
   z
@@ -55,6 +56,7 @@ const field =
   "h-12 w-full rounded-xl border border-slate-400 bg-white px-3.5 text-base text-slate-900 focus:border-[#0F9468] focus:outline-none focus:ring-2 focus:ring-[#0F9468]/20";
 
 export default function EditChargerPage() {
+  usePageTitle("Edit charger");
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

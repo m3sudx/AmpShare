@@ -1,6 +1,7 @@
 import type { QueryResultRow } from "pg";
 import { pool } from "../../config/db"; 
 import { AppError } from "../../utils/app-error.js"; 
+import { announceAvailability } from "../../socket";
 import type { CreateScheduleInput, UpdateScheduleInput } from "./schedules.validation";
 
 // ---------- types ----------
@@ -76,7 +77,11 @@ export async function createSchedule(
       [chargerId, hostId, input.dayOfWeek, input.startTime, input.endTime]
     );
     const row = result.rows[0];
-    return row ? mapScheduleRow(row) : null;
+    if (!row) return null;
+
+    // Live update: anyone watching this charger refetches its hours
+    announceAvailability(row.charger_id, "SCHEDULE_CHANGED");
+    return mapScheduleRow(row);
   } catch (error) {
     return rethrowScheduleError(error);
   }
@@ -147,7 +152,10 @@ export async function updateSchedule(
       values
     );
     const row = result.rows[0];
-    return row ? mapScheduleRow(row) : null;
+    if (!row) return null;
+
+    announceAvailability(row.charger_id, "SCHEDULE_CHANGED");
+    return mapScheduleRow(row);
   } catch (error) {
     return rethrowScheduleError(error);
   }
@@ -155,13 +163,19 @@ export async function updateSchedule(
 
 // ---------- delete ----------
 export async function deleteSchedule(id: string, hostId: string): Promise<boolean> {
-  const result = await pool.query(
+  const result = await pool.query<{ charger_id: string }>(
     `DELETE FROM charger_schedules s
      USING chargers c
      WHERE s.id = $1
        AND s.charger_id = c.id
-       AND c.host_id = $2`,
+       AND c.host_id = $2
+     RETURNING s.charger_id`,
     [id, hostId]
   );
-  return (result.rowCount ?? 0) > 0;
+
+  const row = result.rows[0];
+  if (!row) return false;
+
+  announceAvailability(row.charger_id, "SCHEDULE_CHANGED");
+  return true;
 }
