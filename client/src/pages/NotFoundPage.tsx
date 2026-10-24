@@ -1,7 +1,9 @@
 
 import { Link, useNavigate } from "react-router";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 function UnpluggedCharger({ className = "" }) {
+  usePageTitle("Page not found");
   return (
     <svg
       viewBox="0 0 320 260"

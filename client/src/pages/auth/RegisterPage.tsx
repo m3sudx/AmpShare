@@ -6,8 +6,10 @@ import AuthLayout from "../../components/auth/AuthLayout";
 import EthiopiaPhoneInput from "../../components/auth/EthiopiaPhoneInput";
 import { useAuth, useToast } from "../../context";
 import { isValidEthiopianPhone, normalizeEthiopianPhone } from "../../utils/phone";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function RegisterPage() {
+  usePageTitle("Create account");
   const navigate = useNavigate();
   const location = useLocation();
   const { register } = useAuth();

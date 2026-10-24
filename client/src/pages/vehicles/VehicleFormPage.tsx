@@ -10,8 +10,10 @@ import {
   updateVehicleRequest,
 } from "../../services/vehicles.api";
 import type { CreateVehiclePayload, UpdateVehiclePayload, Vehicle } from "../../types/vehicle";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function VehicleFormPage() {
+  usePageTitle("vehicle form");
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
   const navigate = useNavigate();

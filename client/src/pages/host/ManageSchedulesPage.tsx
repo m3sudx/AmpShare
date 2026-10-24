@@ -8,6 +8,7 @@ import { updateCharger } from "../../services/chargers.api";
 import { createSchedule, deleteSchedule, updateSchedule } from "../../services/schedules.api";
 import type { Schedule } from "../../types/schedule";
 import { DAY_ORDER, slotsForDay, toHHMM, toMinutes } from "../../utils/scheduleFormat";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const PLUG_LABEL = { "GB/T": "GB/T", TYPE_2: "Type 2", CCS2: "CCS2" } as const;
@@ -64,6 +65,7 @@ const timeInput =
   "h-11 w-full rounded-xl border border-slate-400 bg-white px-3.5 text-center text-[15px] font-semibold tabular-nums text-slate-900 focus:border-[#0F9468] focus:outline-none focus:ring-2 focus:ring-[#0F9468]/20";
 
 export default function ManageSchedulesPage() {
+  usePageTitle("Manage schedules");
   const { id } = useParams();
   const queryClient = useQueryClient();
   const chargerQuery = useCharger(id);

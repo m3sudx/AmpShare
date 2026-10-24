@@ -18,6 +18,7 @@ import { cancelBooking, confirmBooking, listBookings } from "../../services/book
 import type { Booking, BookingStatus } from "../../types/booking";
 import { effectiveStatus } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -161,6 +162,7 @@ function CancelDialog({
 
 export default function BookingsPage() {
   const { user } = useAuth();
+  usePageTitle("My bookings");
   const [searchParams, setSearchParams] = useSearchParams();
   const isHostUser = !!user?.roles.includes("HOST");
   const isHostMode = searchParams.get("as") === "host" && isHostUser;

@@ -1,16 +1,10 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
-import {
-  Bell,
-  CalendarDays,
-  CarFront,
-  LogOut,
-  MapPin,
-  Zap,
-} from "lucide-react";
+import { CalendarDays, CarFront, LogOut, MapPin, Zap } from "lucide-react";
 import { useAuth } from "../../context";
 import { formatPhoneDisplay } from "../../utils/phone";
 import LogoutConfirmDialog from "./LogoutConfirmDialog";
+import NotificationBell from "./NotificationBell";
 
 const navItems = [
   { to: "/chargers", label: "Find Chargers", Icon: MapPin },
@@ -18,6 +12,12 @@ const navItems = [
   { to: "/vehicles", label: "My Vehicles", Icon: CarFront },
   { to: "/host", label: "Host", Icon: Zap },
 ];
+
+function initials(name?: string | null) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
 
 export default function TopNav() {
   const location = useLocation();
@@ -31,6 +31,7 @@ export default function TopNav() {
     navigate("/login", { replace: true });
   };
 
+  const displayPhone = formatPhoneDisplay(user?.phoneNumber) || "";
   const displayPhone = formatPhoneDisplay(user?.phoneNumber) || "+251 91 234 5678";
   const isAdmin = user?.roles.includes("ADMIN");
 
@@ -40,20 +41,19 @@ export default function TopNav() {
   ];
 
   return (
-    <header className="border-b border-slate-200 bg-white sticky top-0 z-40 shadow-xs">
-      <div className="mx-auto flex min-h-12 max-w-7xl flex-wrap items-center px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center px-4 sm:px-6 lg:px-8">
         {/* Logo and brand */}
         <Link
           to="/chargers"
-          className="flex shrink-0 items-center gap-2.5 py-2.5 group"
+          className="group flex h-16 shrink-0 items-center gap-3 md:h-18"
         >
           <img
             src="/ampshare-logo.png"
-            alt="AmpShare Logo"
-            className="h-8 w-8 object-contain transition-transform group-hover:scale-105"
+            alt=""
+            className="h-10 w-10 object-contain transition-transform group-hover:scale-105"
           />
-
-          <span className="text-[17px] font-bold tracking-tight text-[#0F9468]">
+          <span className="text-[22px] font-bold tracking-tight text-[#0B7A55]">
             AmpShare
           </span>
         </Link>
@@ -61,7 +61,7 @@ export default function TopNav() {
         {/* Main navigation */}
         <nav
           aria-label="Main navigation"
-          className="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 md:order-0 md:ml-8 md:h-12 md:w-auto md:border-t-0 no-scrollbar py-0.5 md:py-0"
+          className="no-scrollbar order-3 -mx-1 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 py-2 md:order-0 md:mx-0 md:ml-10 md:w-auto md:border-t-0 md:py-0"
         >
           {items.map(({ to, label }) => {
             // Highlight My Vehicles on /vehicles, /vehicles/new, and /vehicles/:id/edit
@@ -78,16 +78,15 @@ export default function TopNav() {
                 className={({ isActive }) => {
                   const active = isVehicleActive || isBookingsActive || isActive;
                   return [
-                    "relative flex h-11 md:h-12 shrink-0 items-center px-3 sm:px-3.5",
-                    "text-xs font-semibold transition-colors whitespace-nowrap",
-                    "after:absolute after:bottom-0 after:left-3.5",
-                    "after:right-3.5 after:h-0.5 after:rounded-t",
+                    "flex h-11 shrink-0 items-center gap-2 rounded-xl px-4",
+                    "whitespace-nowrap text-[15px] font-semibold transition-colors",
                     active
-                      ? "text-[#0F9468] after:bg-[#0F9468]"
-                      : "text-slate-600 after:bg-transparent hover:text-[#0F9468]",
+                      ? "bg-[#E7F6F0] text-[#0B7A55]"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                   ].join(" ");
                 }}
               >
+                <Icon size={18} strokeWidth={2} aria-hidden="true" />
                 {label}
               </NavLink>
             );
@@ -95,43 +94,42 @@ export default function TopNav() {
         </nav>
 
         {/* Notifications and profile */}
-        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3 py-2">
-          {/* Notifications */}
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
-          >
-            <Bell size={17} strokeWidth={1.8} />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#0F9468] ring-2 ring-white" />
-          </button>
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+          <NotificationBell />
 
-          <div className="h-4 sm:h-5 w-px bg-slate-200" />
+          <div className="h-8 w-px bg-slate-200" aria-hidden="true" />
 
-          {/* User profile identifier - phone number visible on all screen sizes */}
-          <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 bg-slate-50 py-0.5 sm:py-1 pl-0.5 sm:pl-1 pr-2.5 sm:pr-3">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0F9468] text-[10px] font-bold text-white shadow-xs shrink-0">
-              ET
+          {/* Profile */}
+          <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-4 max-[420px]:pr-1">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0B7A55] text-sm font-bold text-white">
+              {initials(user?.fullName)}
             </span>
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-700 whitespace-nowrap">
-              {displayPhone}
+            <span className="leading-tight max-[420px]:hidden">
+              {user?.fullName && (
+                <span className="hidden text-sm font-semibold text-slate-900 lg:block">
+                  {user.fullName}
+                </span>
+              )}
+              <span className="block whitespace-nowrap text-sm font-medium text-slate-600 lg:text-xs">
+                {displayPhone}
+              </span>
             </span>
           </div>
 
-          {/* Sign Out Button */}
+          {/* Sign out */}
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
             title="Sign out"
             aria-label="Sign out"
-            className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer shrink-0"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
           >
-            <LogOut size={16} strokeWidth={1.8} />
+            <LogOut size={20} strokeWidth={1.9} />
           </button>
         </div>
       </div>
 
-      {/* Logout Confirmation Verification Dialog */}
+      {/* Logout confirmation dialog */}
       <LogoutConfirmDialog
         isOpen={showLogoutConfirm}
         onClose={() => setShowLogoutConfirm(false)}

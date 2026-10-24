@@ -24,6 +24,7 @@ import type { Charger, PlugType, UpdateChargerInput } from "../../types/charger"
 import { PLUG_LABELS } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
 import { DEFAULT_CENTER, type LatLng } from "../../utils/geo";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 interface Values {
   title: string;
@@ -114,6 +115,7 @@ type LoadState =
   | { status: "ready"; charger: Charger | null };
 
 export default function ChargerFormPage() {
+  usePageTitle("Charger form");
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const { user } = useAuth();

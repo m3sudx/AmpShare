@@ -34,6 +34,7 @@ import {
 } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
 import { formatDate, formatTime } from "../../utils/format";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -79,6 +80,7 @@ function Skeleton() {
 }
 
 export default function BookingDetailsPage() {
+  usePageTitle("Booking details");
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [state, setState] = useState<LoadState>({ status: "loading" });

@@ -14,6 +14,7 @@ import { getErrorMessage } from "../../utils/errors";
 import { formatDate, formatTime } from "../../utils/format";
 import { describeMinutes } from "../../utils/slots";
 import type { ReactNode } from "react";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -68,6 +69,7 @@ function Stat({
 }
 
 export default function ChargingSessionsPage() {
+  usePageTitle("Charging sessions");
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [filter, setFilter] = useState<Filter>("ALL");
@@ -314,7 +316,7 @@ export default function ChargingSessionsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <table className="w-full min-w-[760px] text-left text-sm">
+              <table className="w-full min-w-190 text-left text-sm">
                 <caption className="sr-only">Charging sessions</caption>
                 <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>

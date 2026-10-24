@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { listMyChargers, updateCharger } from "../../services/chargers.api";
 import type { Charger } from "../../types/charger";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const PLUG_LABEL = { "GB/T": "GB/T", TYPE_2: "Type 2", CCS2: "CCS2" } as const;
 
@@ -27,6 +28,7 @@ async function fetchMine(): Promise<Charger[]> {
 }
 
 export default function MyChargersPage() {
+  usePageTitle("Host dashboard");
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
 

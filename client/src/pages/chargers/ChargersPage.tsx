@@ -4,11 +4,15 @@ import ChargerFilters from "../chargers/ChargerFilters";
 import ChargerList from "../../components/chargers/ChargerList";
 import ChargersMap from "../chargers/ChargersMap";
 import { useChargerSearch } from "../../hooks/useChargerSearch";
+import { useChargersLive } from "../../hooks/useChargerLive"; 
 import { getRoute } from "../../services/routing.api";
 import type { NearbyCharger } from "../../types/charger";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function ChargersPage() {
+    usePageTitle("Find Chargers")
   const { chargers, query, filters, update, reset } = useChargerSearch();
+  useChargersLive(); // NEW: refetch the list when a host pauses, activates or edits a charger
   const [activeId, setActiveId] = useState<string | null>(null);
   const [view, setView] = useState<"list" | "map">("list");
   const [locationDenied, setLocationDenied] = useState(false);

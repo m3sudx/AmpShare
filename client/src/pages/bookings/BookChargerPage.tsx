@@ -12,6 +12,7 @@ import {
 import BookingForm from "../../components/bookings/BookingForm";
 import { getCharger } from "../../services/chargers.api";
 import { listSchedules } from "../../services/schedules.api";
+import { socket } from "../../services/socket"; // NEW
 import { listMyVehicles } from "../../services/vehicles.api";
 import type { Charger } from "../../types/charger";
 import type { Schedule } from "../../types/schedule";
@@ -19,6 +20,7 @@ import type { Vehicle } from "../../types/vehicle";
 import { PLUG_LABELS } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
 import { formatPrice } from "../../utils/format";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 type LoadState =
   | { status: "loading" }
@@ -31,7 +33,17 @@ type LoadState =
       schedules: Schedule[] | null;
     };
 
+// Only a missing charger counts as "not found"; other failures are real errors
+function fetchCharger(chargerId: string) {
+  return getCharger(chargerId).catch((err: unknown) => {
+    const code = isAxiosError(err) ? err.response?.status : undefined;
+    if (code === 404 || code === 400) return null;
+    throw err;
+  });
+}
+
 export default function BookChargerPage() {
+  usePageTitle("Book a charger");
   const { chargerId } = useParams<{ chargerId: string }>();
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
@@ -40,15 +52,8 @@ export default function BookChargerPage() {
     if (!chargerId) return;
     let cancelled = false;
 
-    // Only a missing charger counts as "not found"; other failures are real errors
-    const chargerRequest = getCharger(chargerId).catch((err: unknown) => {
-      const code = isAxiosError(err) ? err.response?.status : undefined;
-      if (code === 404 || code === 400) return null;
-      throw err;
-    });
-
     Promise.all([
-      chargerRequest,
+      fetchCharger(chargerId),
       listMyVehicles(),
       // If the host hours cannot be read, the form falls back to server-side validation
       listSchedules(chargerId).catch(() => null),
@@ -73,6 +78,50 @@ export default function BookChargerPage() {
       cancelled = true;
     };
   }, [chargerId, attempt]);
+
+  // NEW: live updates. When the host edits this charger or its hours, refetch
+  // quietly (no skeleton, form input is kept) and swap in the fresh data.
+  useEffect(() => {
+    if (!chargerId) return;
+    let cancelled = false;
+
+    const watch = () => socket.emit("charger:watch", chargerId);
+
+    const onAvailability = (payload: { chargerId: string }) => {
+      if (payload.chargerId !== chargerId) return;
+
+      Promise.all([
+        fetchCharger(chargerId),
+        listSchedules(chargerId).catch(() => null),
+      ])
+        .then(([charger, schedules]) => {
+          if (cancelled) return;
+          setState((prev) => {
+            if (prev.status !== "ready") return prev;
+            if (!charger) return { status: "not-found" };
+            return {
+              ...prev,
+              charger,
+              schedules: schedules ?? prev.schedules,
+            };
+          });
+        })
+        .catch(() => {
+          // Keep showing what we already have if the refresh fails
+        });
+    };
+
+    watch(); // emitted now, or buffered until the socket connects
+    socket.on("connect", watch); // re-watch after a reconnect
+    socket.on("charger:availability", onAvailability);
+
+    return () => {
+      cancelled = true;
+      socket.off("connect", watch);
+      socket.off("charger:availability", onAvailability);
+      socket.emit("charger:unwatch", chargerId);
+    };
+  }, [chargerId]);
 
   const retry = () => {
     setState({ status: "loading" });

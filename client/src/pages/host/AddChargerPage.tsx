@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import LocationPicker from "../../components/chargers/LocationPicker";
 import { createCharger } from "../../services/chargers.api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const DEFAULT_POINT = { lat: 9.03, lng: 38.74 }; // Addis Ababa
 
@@ -101,6 +102,7 @@ const Card = ({ title, children }: { title: string; children: React.ReactNode })
 );
 
 export default function AddChargerPage() {
+  usePageTitle("Add charger");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
