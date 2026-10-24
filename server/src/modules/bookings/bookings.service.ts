@@ -2,6 +2,11 @@ import type { PoolClient } from "pg";
 import { pool } from "../../config/db";
 import { AppError } from "../../utils/app-error";
 import { hasPgCode, withTransaction } from "../../utils/db-helpers";
+import {
+  notifyBookingCancelled,
+  notifyBookingConfirmed,
+  notifyBookingCreated,
+} from "../notifications/notifications.service";
 
 const PENDING_HOLD_MINUTES = 15;
 
@@ -76,7 +81,7 @@ export async function createBooking(
   const end = new Date(input.endTime);
 
   try {
-    return await withTransaction(async (client) => {
+    const booking = await withTransaction(async (client) => {
       const vehicle = await client.query(
         "SELECT id FROM vehicles WHERE id = $1 AND driver_id = $2",
         [input.vehicleId, driverId],
@@ -148,6 +153,10 @@ export async function createBooking(
       );
       return fetchBooking(client, inserted.rows[0].id);
     });
+
+    // After the transaction commits: tell the host about the new request
+    await notifyBookingCreated(booking);
+    return booking;
   } catch (err) {
     if (hasPgCode(err, "23P01"))
       throw new AppError("Time slot is not available", 409);
@@ -220,11 +229,14 @@ export async function confirmBooking(hostId: string, id: string) {
   });
 
   if (!result.ok) throw new AppError(result.conflict, 409);
+
+  // After the transaction commits: tell the driver
+  await notifyBookingConfirmed(result.booking);
   return result.booking;
 }
 
 export async function cancelBooking(userId: string, id: string) {
-  return withTransaction(async (client) => {
+  const booking = await withTransaction(async (client) => {
     const row = await lockBooking(client, id);
     if (!row || (row.driver_id !== userId && row.host_id !== userId)) {
       throw new AppError("Booking not found", 404);
@@ -241,4 +253,8 @@ export async function cancelBooking(userId: string, id: string) {
     );
     return fetchBooking(client, id);
   });
+
+  // After the transaction commits: tell the other side
+  await notifyBookingCancelled(booking, userId);
+  return booking;
 }

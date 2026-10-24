@@ -453,10 +453,6 @@ export default function BookingDetailsPage() {
             <ul className="space-y-2 text-sm text-slate-600">
               <li>You can cancel while the booking is Pending or Confirmed.</li>
               <li>Tap Start charging once your vehicle is plugged in.</li>
-              <li>
-                No payment is taken in the app. You pay the host after your
-                session.
-              </li>
             </ul>
           </section>
         </div>
