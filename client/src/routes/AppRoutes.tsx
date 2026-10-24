@@ -4,6 +4,7 @@ import AppLayout from "../components/layout/AppLayout";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PublicOnlyRoute from "../components/PublicOnlyRoute";
 import HostRoute from "../components/HostRoute";
+import AdminRoute from "../components/AdminRoute";
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
@@ -20,6 +21,7 @@ import LandingPage from "../pages/LandingPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import HostPage from "../pages/host/HostPage";
 import ChargerFormPage from "../pages/host/ChargerFormPage";
+import AdminPayoutsPage from "../pages/admin/AdminPayoutsPage";
 
 export default function AppRoutes() {
   return (
@@ -66,6 +68,11 @@ export default function AppRoutes() {
               path="/host/chargers/:id/edit"
               element={<ChargerFormPage />}
             />
+          </Route>
+
+          {/* Admin */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
           </Route>
         </Route>
       </Route>
