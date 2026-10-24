@@ -28,11 +28,18 @@ export interface BookingHost {
   fullName: string;
 }
 
+export interface BookingDriver {
+  id: string;
+  fullName: string;
+  phoneNumber?: string;
+}
+
 export interface Booking {
   id: string;
   driverId: string;
   chargerId: string;
   vehicleId: string;
+  sessionId?: string | null;
   status: BookingStatus;
   startTime: string;
   endTime: string;
@@ -45,6 +52,7 @@ export interface Booking {
   charger: BookingCharger;
   vehicle: BookingVehicle;
   host: BookingHost;
+  driver?: BookingDriver;
 }
 
 export interface CreateBookingInput {
@@ -73,4 +81,6 @@ export interface ChargingSession {
     plugType: PlugType;
   };
   vehicle: { make: string; model: string };
+  driver?: BookingDriver;
+  host?: BookingHost;
 }

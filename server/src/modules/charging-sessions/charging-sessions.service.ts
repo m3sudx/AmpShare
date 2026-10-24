@@ -9,12 +9,16 @@ const SESSION_COLS = `s.id, s.booking_id, s.started_at, s.ended_at, s.energy_del
   b.price_per_kwh_at_booking, b.final_cost,
   c.title AS charger_title, c.address_description AS charger_address,
   c.power_kw AS charger_power_kw, c.plug_type AS charger_plug_type,
-  v.make AS vehicle_make, v.model AS vehicle_model`;
+  v.make AS vehicle_make, v.model AS vehicle_model,
+  d.id AS driver_id, d.full_name AS driver_name, d.phone_number AS driver_phone,
+  h.id AS host_id, h.full_name AS host_name`;
 
 const SESSION_FROM = `FROM charging_sessions s
   JOIN bookings b ON b.id = s.booking_id
   JOIN chargers c ON c.id = b.charger_id
-  JOIN vehicles v ON v.id = b.vehicle_id`;
+  JOIN vehicles v ON v.id = b.vehicle_id
+  JOIN users d ON d.id = b.driver_id
+  JOIN users h ON h.id = c.host_id`;
 
 function toSession(row: any) {
   return {
@@ -37,6 +41,15 @@ function toSession(row: any) {
       plugType: row.charger_plug_type,
     },
     vehicle: { make: row.vehicle_make, model: row.vehicle_model },
+    driver: {
+      id: row.driver_id,
+      fullName: row.driver_name,
+      phoneNumber: row.driver_phone,
+    },
+    host: {
+      id: row.host_id,
+      fullName: row.host_name,
+    },
   };
 }
 

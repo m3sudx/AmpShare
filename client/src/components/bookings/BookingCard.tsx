@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Car, Clock, MapPin, Zap } from "lucide-react";
+import { Car, Clock, MapPin, User, Zap } from "lucide-react";
 import type { Booking } from "../../types/booking";
 import { formatTime } from "../../utils/format";
 import {
@@ -15,12 +15,23 @@ interface Props {
   booking: Booking;
   now: number;
   onCancel: (booking: Booking) => void;
+  isHostView?: boolean;
+  onConfirm?: (booking: Booking) => void;
+  confirming?: boolean;
 }
 
-export default function BookingCard({ booking, now, onCancel }: Props) {
+export default function BookingCard({
+  booking,
+  now,
+  onCancel,
+  isHostView = false,
+  onConfirm,
+  confirming = false,
+}: Props) {
   const status = effectiveStatus(booking, now);
   const start = new Date(booking.startTime);
   const canCancel = status === "PENDING" || status === "CONFIRMED";
+  const canConfirm = isHostView && status === "PENDING" && !!onConfirm;
   const expiresIn =
     status === "PENDING" && booking.expiresAt
       ? minutesUntil(booking.expiresAt, now)
@@ -77,16 +88,42 @@ export default function BookingCard({ booking, now, onCancel }: Props) {
             />
             {booking.vehicle.make} {booking.vehicle.model}
           </p>
-          <p className="flex items-center gap-2 text-sm text-slate-600">
-            <MapPin
-              className="h-4 w-4 shrink-0 text-slate-400"
-              aria-hidden="true"
-            />
-            <span className="truncate">
-              Host: {booking.host.fullName} ·{" "}
-              {booking.charger.addressDescription}
-            </span>
-          </p>
+          {isHostView ? (
+            <>
+              <p className="flex items-center gap-2 text-sm text-slate-700">
+                <User
+                  className="h-4 w-4 shrink-0 text-emerald-600"
+                  aria-hidden="true"
+                />
+                <span>
+                  Requester: <strong className="font-semibold text-slate-900">{booking.driver?.fullName || "Driver"}</strong>
+                  {booking.driver?.phoneNumber && (
+                    <span className="text-slate-500 font-normal"> · {booking.driver.phoneNumber}</span>
+                  )}
+                </span>
+              </p>
+              <p className="flex items-center gap-2 text-sm text-slate-600">
+                <MapPin
+                  className="h-4 w-4 shrink-0 text-slate-400"
+                  aria-hidden="true"
+                />
+                <span className="truncate">
+                  {booking.charger.addressDescription}
+                </span>
+              </p>
+            </>
+          ) : (
+            <p className="flex items-center gap-2 text-sm text-slate-600">
+              <MapPin
+                className="h-4 w-4 shrink-0 text-slate-400"
+                aria-hidden="true"
+              />
+              <span className="truncate">
+                Host: {booking.host.fullName} ·{" "}
+                {booking.charger.addressDescription}
+              </span>
+            </p>
+          )}
           <p className="flex items-center gap-2 text-sm text-slate-600">
             <Zap
               className="h-4 w-4 shrink-0 text-slate-400"
@@ -99,6 +136,16 @@ export default function BookingCard({ booking, now, onCancel }: Props) {
         </div>
 
         <div className="flex shrink-0 gap-2 sm:flex-col">
+          {canConfirm && (
+            <button
+              type="button"
+              disabled={confirming}
+              onClick={() => onConfirm(booking)}
+              className="rounded-xl bg-[#0F9468] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0c7d58] focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60"
+            >
+              {confirming ? "Approving..." : "Approve"}
+            </button>
+          )}
           <Link
             to={`/bookings/${booking.id}`}
             className="rounded-xl border border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -119,7 +166,7 @@ export default function BookingCard({ booking, now, onCancel }: Props) {
               onClick={() => onCancel(booking)}
               className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
             >
-              Cancel
+              {isHostView ? "Reject" : "Cancel"}
             </button>
           )}
         </div>
