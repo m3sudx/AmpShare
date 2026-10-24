@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import ConfirmDialog from "../../components/bookings/ConfirmDialog";
 import StatusBadge from "../../components/bookings/StatusBadge";
+import PaymentSection from "../../components/payments/PaymentSection";
+import { useAuth } from "../../context";
 import {
   cancelBooking,
   getBooking,
@@ -78,6 +80,7 @@ function Skeleton() {
 
 export default function BookingDetailsPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -217,7 +220,11 @@ export default function BookingDetailsPage() {
     status === "PENDING" && booking.expiresAt
       ? minutesUntil(booking.expiresAt, now)
       : null;
-  const initials = booking.host.fullName
+  const isHost = booking.host.id === user?.id;
+  const personName = isHost
+    ? booking.driver?.fullName || "Driver"
+    : booking.host.fullName;
+  const initials = personName
     .split(" ")
     .map((part) => part[0])
     .slice(0, 2)
@@ -284,11 +291,11 @@ export default function BookingDetailsPage() {
           )}
           {status === "ACTIVE" && (
             <Link
-              to="/sessions"
+              to={booking.sessionId ? `/sessions/${booking.sessionId}` : "/sessions"}
               className="inline-flex items-center gap-2 rounded-xl bg-[#0F9468] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0c7d58]"
             >
               <Zap className="h-4 w-4" aria-hidden="true" />
-              View session
+              {isHost ? "Finish charging session" : "View session"}
             </Link>
           )}
           {canCancel && (
@@ -365,67 +372,79 @@ export default function BookingDetailsPage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section
-          aria-labelledby="details-heading"
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2"
-        >
-          <h2
-            id="details-heading"
-            className="mb-2 text-base font-semibold text-slate-900"
-          >
-            Reservation details
-          </h2>
-          <dl className="divide-y divide-slate-100">
-            <Row label="Date">{formatDate(booking.startTime)}</Row>
-            <Row label="Time and duration">
-              <span className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                {formatTime(booking.startTime)} - {formatTime(booking.endTime)}{" "}
-                ({formatDuration(booking.startTime, booking.endTime)})
-              </span>
-            </Row>
-            <Row label="Vehicle">
-              <span className="flex items-center gap-2">
-                <Car className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                {booking.vehicle.make} {booking.vehicle.model}
-              </span>
-            </Row>
-            <Row label="Connector">
-              <span className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                {PLUG_LABELS[booking.charger.plugType]} ·{" "}
-                {booking.charger.powerKw} kW
-              </span>
-            </Row>
-            <Row label="Rate">
-              {booking.pricePerKwh.toFixed(2)} ETB / kWh (locked at booking)
-            </Row>
-            {booking.estimatedEnergyKwh !== null && (
-              <Row label="Estimated energy">
-                {booking.estimatedEnergyKwh} kWh
-              </Row>
-            )}
-            <Row label="Estimated cost">{formatEtb(booking.estimatedCost)}</Row>
-            {booking.finalCost !== null && (
-              <Row label="Final cost">
-                <span className="font-semibold">
-                  {formatEtb(booking.finalCost)}
-                </span>
-              </Row>
-            )}
-          </dl>
-        </section>
+        <div className="space-y-6 lg:col-span-2">
+          {booking.finalCost !== null && (
+            <PaymentSection
+              bookingId={booking.id}
+              finalCost={booking.finalCost}
+              isDriver={booking.driverId === user?.id}
+              defaultPhone={user?.phoneNumber}
+              onPaymentSuccess={retry}
+            />
+          )}
 
-        <div className="space-y-6">
           <section
-            aria-labelledby="host-heading"
+            aria-labelledby="details-heading"
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
             <h2
-              id="host-heading"
+              id="details-heading"
+              className="mb-2 text-base font-semibold text-slate-900"
+            >
+              Reservation details
+            </h2>
+            <dl className="divide-y divide-slate-100">
+              <Row label="Date">{formatDate(booking.startTime)}</Row>
+              <Row label="Time and duration">
+                <span className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  {formatTime(booking.startTime)} - {formatTime(booking.endTime)}{" "}
+                  ({formatDuration(booking.startTime, booking.endTime)})
+                </span>
+              </Row>
+              <Row label="Vehicle">
+                <span className="flex items-center gap-2">
+                  <Car className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  {booking.vehicle.make} {booking.vehicle.model}
+                </span>
+              </Row>
+              <Row label="Connector">
+                <span className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  {PLUG_LABELS[booking.charger.plugType]} ·{" "}
+                  {booking.charger.powerKw} kW
+                </span>
+              </Row>
+              <Row label="Rate">
+                {booking.pricePerKwh.toFixed(2)} ETB / kWh (locked at booking)
+              </Row>
+              {booking.estimatedEnergyKwh !== null && (
+                <Row label="Estimated energy">
+                  {booking.estimatedEnergyKwh} kWh
+                </Row>
+              )}
+              <Row label="Estimated cost">{formatEtb(booking.estimatedCost)}</Row>
+              {booking.finalCost !== null && (
+                <Row label="Final cost">
+                  <span className="font-semibold">
+                    {formatEtb(booking.finalCost)}
+                  </span>
+                </Row>
+              )}
+            </dl>
+          </section>
+        </div>
+
+        <div className="space-y-6">
+          <section
+            aria-labelledby="person-heading"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
+            <h2
+              id="person-heading"
               className="mb-3 text-base font-semibold text-slate-900"
             >
-              Station host
+              {isHost ? "Booking Requester" : "Station host"}
             </h2>
             <div className="flex items-center gap-3">
               <span
@@ -434,9 +453,16 @@ export default function BookingDetailsPage() {
               >
                 {initials}
               </span>
-              <span className="text-sm font-medium text-slate-900">
-                {booking.host.fullName}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-slate-900">
+                  {personName}
+                </span>
+                {isHost && booking.driver?.phoneNumber && (
+                  <span className="text-xs text-slate-500">
+                    {booking.driver.phoneNumber}
+                  </span>
+                )}
+              </div>
             </div>
           </section>
 
@@ -454,8 +480,7 @@ export default function BookingDetailsPage() {
               <li>You can cancel while the booking is Pending or Confirmed.</li>
               <li>Tap Start charging once your vehicle is plugged in.</li>
               <li>
-                No payment is taken in the app. You pay the host after your
-                session.
+                Direct Telebirr mobile payment is used once charging completes.
               </li>
             </ul>
           </section>
