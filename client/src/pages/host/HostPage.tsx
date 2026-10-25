@@ -27,7 +27,6 @@ import type { Charger } from "../../types/charger";
 import type { HostEarningsSummary } from "../../types/payment";
 import { effectiveStatus, formatEtb, PLUG_LABELS } from "../../utils/booking";
 import { getErrorMessage } from "../../utils/errors";
-import { formatPrice } from "../../utils/format";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { formatDate, formatPrice } from "../../utils/format";
 

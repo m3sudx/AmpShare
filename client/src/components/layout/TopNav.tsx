@@ -5,6 +5,7 @@ import { useAuth } from "../../context";
 import { formatPhoneDisplay } from "../../utils/phone";
 import LogoutConfirmDialog from "./LogoutConfirmDialog";
 import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   { to: "/chargers", label: "Find Chargers", Icon: MapPin },
@@ -32,12 +33,13 @@ export default function TopNav() {
   };
 
   const displayPhone = formatPhoneDisplay(user?.phoneNumber) || "";
-  const displayPhone = formatPhoneDisplay(user?.phoneNumber) || "+251 91 234 5678";
   const isAdmin = user?.roles.includes("ADMIN");
 
   const items = [
     ...navItems,
-    ...(isAdmin ? [{ to: "/admin/payouts", label: "Admin Payouts", Icon: Zap }] : []),
+    ...(isAdmin
+      ? [{ to: "/admin/payouts", label: "Admin Payouts", Icon: Zap }]
+      : []),
   ];
 
   return (
@@ -63,7 +65,7 @@ export default function TopNav() {
           aria-label="Main navigation"
           className="no-scrollbar order-3 -mx-1 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 py-2 md:order-0 md:mx-0 md:ml-10 md:w-auto md:border-t-0 md:py-0"
         >
-          {items.map(({ to, label }) => {
+          {items.map(({ to, label, Icon }) => {
             // Highlight My Vehicles on /vehicles, /vehicles/new, and /vehicles/:id/edit
             const isVehicleActive =
               to === "/vehicles" && location.pathname.startsWith("/vehicles");
@@ -76,7 +78,8 @@ export default function TopNav() {
                 key={to}
                 to={to}
                 className={({ isActive }) => {
-                  const active = isVehicleActive || isBookingsActive || isActive;
+                  const active =
+                    isVehicleActive || isBookingsActive || isActive;
                   return [
                     "flex h-11 shrink-0 items-center gap-2 rounded-xl px-4",
                     "whitespace-nowrap text-[15px] font-semibold transition-colors",
@@ -96,6 +99,7 @@ export default function TopNav() {
         {/* Notifications and profile */}
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
           <NotificationBell />
+          <ThemeToggle />
 
           <div className="h-8 w-px bg-slate-200" aria-hidden="true" />
 

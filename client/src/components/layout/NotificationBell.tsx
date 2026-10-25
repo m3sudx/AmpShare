@@ -19,6 +19,13 @@ function timeAgo(iso: string) {
   return `${Math.floor(hours / 24)} d ago`;
 }
 
+// Where a notification should take the user
+function notificationTarget(n: AppNotification): string | null {
+  // A new booking request goes to the host's list, where they can confirm it
+  if (/CREATED|REQUEST/i.test(n.type)) return "/bookings?as=host";
+  return n.bookingId ? `/bookings/${n.bookingId}` : null;
+}
+
 export default function NotificationBell() {
   useRealtimeNotifications();
 
@@ -51,7 +58,8 @@ export default function NotificationBell() {
   function openItem(n: AppNotification) {
     if (!n.readAt) markRead.mutate(n.id);
     setOpen(false);
-    if (n.bookingId) navigate(`/bookings/${n.bookingId}`);
+    const target = notificationTarget(n);
+    if (target) navigate(target);
   }
 
   return (
@@ -66,7 +74,7 @@ export default function NotificationBell() {
       >
         <Bell size={22} strokeWidth={1.9} />
         {unread > 0 && (
-          <span className="absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0B7A55] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-white">
+          <span className="absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0B7A55] px-1 text-[11px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#111d18]">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -80,7 +88,7 @@ export default function NotificationBell() {
               type="button"
               onClick={() => markAll.mutate()}
               disabled={unread === 0 || markAll.isPending}
-              className="min-h-9 cursor-pointer rounded-lg px-2 text-sm font-semibold text-[#0B7A55] hover:bg-[#F0FAF6] disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-transparent"
+              className="min-h-9 cursor-pointer rounded-lg px-2 text-sm font-semibold text-[#0B7A55] hover:bg-[#F0FAF6] disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-transparent dark:hover:bg-[#12302a]"
             >
               Mark all as read
             </button>
@@ -102,7 +110,7 @@ export default function NotificationBell() {
                     type="button"
                     onClick={() => openItem(n)}
                     className={`flex w-full cursor-pointer items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 ${
-                      n.readAt ? "" : "bg-[#F0FAF6]"
+                      n.readAt ? "" : "bg-[#F0FAF6] dark:bg-[#12302a]"
                     }`}
                   >
                     <span

@@ -22,6 +22,18 @@
     property="og:description"
     content="Find a nearby EV charger, book a slot, and charge. Or host your own and earn."
   />
+
+<script>
+  (function () {
+    try {
+      if (location.pathname === "/") return;
+      if (localStorage.getItem("ampshare-theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    } catch (e) {}
+  })();
+</script>
+
 </head>
   <body>
     <div id="root"></div>
