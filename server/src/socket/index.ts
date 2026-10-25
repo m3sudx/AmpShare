@@ -115,3 +115,23 @@ export function announceAvailability(
 export function announceChargersChanged(chargerId: string) {
   io?.emit("chargers:changed", { chargerId });
 }
+
+export type BookingUpdateReason =
+  | "BOOKING_CREATED"
+  | "BOOKING_CONFIRMED"
+  | "BOOKING_CANCELLED"
+  | "SESSION_STARTED"
+  | "SESSION_FINISHED"
+  | "PAYMENT_UPDATED";
+
+// Tell both people on a booking that something changed. Clients refetch from the API.
+export function announceBookingUpdated(
+  bookingId: string,
+  userIds: string[],
+  reason: BookingUpdateReason
+) {
+  const payload = { bookingId, reason, at: new Date().toISOString() };
+  for (const userId of new Set(userIds)) {
+    emitToUser(userId, "booking:updated", payload);
+  }
+}

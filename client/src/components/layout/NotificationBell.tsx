@@ -8,6 +8,7 @@ import {
   useRealtimeNotifications,
 } from "../../hooks/useNotifications";
 import type { AppNotification } from "../../types/notification";
+import { useRealtimeBookings } from "../../hooks/useBookingLive";
 
 function timeAgo(iso: string) {
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
@@ -28,6 +29,7 @@ function notificationTarget(n: AppNotification): string | null {
 
 export default function NotificationBell() {
   useRealtimeNotifications();
+    useRealtimeBookings();
 
   const navigate = useNavigate();
   const { data } = useNotificationsQuery();

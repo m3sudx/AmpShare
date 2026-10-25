@@ -13,6 +13,7 @@ import { formatDate, formatPrice, formatTime } from "../../utils/format";
 import { formatElapsed, formatHoursMinutesText } from "../../utils/session";
 import { isAxiosError } from "axios";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { useBookingEvents } from "../../hooks/useBookingLive"; // NEW
 
 type LoadState =
   | { status: "loading" }
@@ -83,6 +84,15 @@ export default function ChargingSessionDetailsPage() {
       })
       .catch(() => {});
   };
+
+  // NEW: live updates. The host finished the session, or the driver paid
+  const [paymentTick, setPaymentTick] = useState(0);
+  useBookingEvents((update) => {
+    if (state.status !== "ready" || update.bookingId !== state.session.bookingId) return;
+    refreshQuietly();
+    // Remount the payment box so the host sees "paid" without a reload
+    if (state.booking.host.id === user?.id) setPaymentTick((t) => t + 1);
+  });
 
   const isActive = state.status === "ready" && state.session.status === "ACTIVE";
   useEffect(() => {
@@ -279,6 +289,7 @@ export default function ChargingSessionDetailsPage() {
 
       {session.status === "FINISHED" && session.finalCost !== null && (
         <PaymentSection
+          key={paymentTick} // NEW
           bookingId={booking.id}
           finalCost={session.finalCost}
           isDriver={booking.driverId === user?.id}

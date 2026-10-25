@@ -1,5 +1,7 @@
 import type { PoolClient } from "pg";
 import { pool } from "../../config/db";
+import { announceAvailability } from "../../socket";
+import { broadcastBookingUpdate } from "../../socket/bookingEvents";
 import { AppError } from "../../utils/app-error";
 import { hasPgCode, withTransaction } from "../../utils/db-helpers";
 import {
@@ -166,6 +168,11 @@ export async function createBooking(
 
     // After the transaction commits: tell the host about the new request
     await notifyBookingCreated(booking);
+
+    // Live updates: charger page watchers, and both people on this booking
+    announceAvailability(booking.chargerId, "BOOKING_CREATED");
+    void broadcastBookingUpdate(booking.id, "BOOKING_CREATED");
+
     return booking;
   } catch (err) {
     if (hasPgCode(err, "23P01"))
@@ -242,6 +249,11 @@ export async function confirmBooking(hostId: string, id: string) {
 
   // After the transaction commits: tell the driver
   await notifyBookingConfirmed(result.booking);
+
+  // Live updates: the driver's open booking page refreshes without a reload
+  announceAvailability(result.booking.chargerId, "BOOKING_CONFIRMED");
+  void broadcastBookingUpdate(result.booking.id, "BOOKING_CONFIRMED");
+
   return result.booking;
 }
 
@@ -266,5 +278,10 @@ export async function cancelBooking(userId: string, id: string) {
 
   // After the transaction commits: tell the other side
   await notifyBookingCancelled(booking, userId);
+
+  // Live updates: the freed slot and both people's booking pages
+  announceAvailability(booking.chargerId, "BOOKING_CANCELLED");
+  void broadcastBookingUpdate(booking.id, "BOOKING_CANCELLED");
+
   return booking;
 }

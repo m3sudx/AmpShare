@@ -1,4 +1,5 @@
 import { pool } from "../../config/db";
+import { broadcastBookingUpdate } from "../../socket/bookingEvents";
 import { AppError } from "../../utils/app-error";
 import { hasPgCode, withTransaction } from "../../utils/db-helpers";
 
@@ -65,7 +66,7 @@ async function loadSession(db: Db, id: string, userId: string | null) {
 
 export async function startSession(userId: string, bookingId: string) {
   try {
-    return await withTransaction(async (client) => {
+    const result = await withTransaction(async (client) => {
       const { rows } = await client.query(
         `SELECT b.id, b.status, b.driver_id, c.host_id,
                 EXISTS (SELECT 1 FROM charging_sessions s WHERE s.booking_id = b.id) AS has_session
@@ -105,6 +106,10 @@ export async function startSession(userId: string, bookingId: string) {
         bookingStatus: session.booking_status,
       };
     });
+
+    // Live update: the other person sees "charging started" without a reload
+    void broadcastBookingUpdate(bookingId, "SESSION_STARTED");
+    return result;
   } catch (err) {
     if (hasPgCode(err, "23505")) {
       throw new AppError("A session already exists for this booking", 409);
@@ -134,7 +139,7 @@ export async function finishSession(
   id: string,
   energyKwh: number,
 ) {
-  return withTransaction(async (client) => {
+  const result = await withTransaction(async (client) => {
     const { rows } = await client.query(
       `SELECT s.id, s.booking_id, s.ended_at, b.status, c.host_id
        FROM charging_sessions s
@@ -171,4 +176,8 @@ export async function finishSession(
       bookingStatus: session.booking_status,
     };
   });
+
+  // Live update: the driver sees "finished, pay now" without a reload
+  void broadcastBookingUpdate(result.session.bookingId, "SESSION_FINISHED");
+  return result;
 }
