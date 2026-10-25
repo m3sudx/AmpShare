@@ -91,3 +91,94 @@ details > summary::-webkit-details-marker {
 details[open] .faq-plus {
   transform: rotate(45deg);
 }
+
+/* Dark mode is handled via the .dark class selectors below. */
+
+.dark {
+  color-scheme: dark; /* native inputs, scrollbars, date pickers */
+
+  /* greys: inverted, with a slight green tint */
+  --color-slate-50: #0b1410;
+  --color-slate-100: #182822;
+  --color-slate-200: #243630;
+  --color-slate-300: #33493f;
+  --color-slate-400: #6f8a7e;
+  --color-slate-500: #93aa9f;
+  --color-slate-600: #b2c4bb;
+  --color-slate-700: #cbd8d1;
+  --color-slate-800: #e0e9e4;
+  --color-slate-900: #f0f6f3;
+
+  /* amber warnings */
+  --color-amber-50: #2a2110;
+  --color-amber-100: #3a2c10;
+  --color-amber-200: #5c4513;
+  --color-amber-700: #fbbf24;
+  --color-amber-800: #fcd34d;
+  --color-amber-900: #fde68a;
+
+  /* blue info boxes */
+  --color-blue-50: #0f2036;
+  --color-blue-200: #1e3a5f;
+  --color-blue-900: #bfdbfe;
+
+  /* red errors */
+  --color-red-50: #2a1214;
+  --color-red-200: #5c1f23;
+  --color-red-500: #f87171;
+  --color-red-700: #fca5a5;
+}
+
+/* bg-white is also used for text-white on buttons, so it is overridden by class instead */
+.dark body { background-color: #0b1410; color: #f0f6f3; }
+.dark .bg-white { background-color: #111d18; }
+.dark .bg-\[\#E7F6F0\] { background-color: #12302a; }
+.dark .text-\[\#0B7A55\] { color: #34d399; }
+.dark .shadow-sm,
+.dark .shadow-lg { --tw-shadow-color: rgb(0 0 0 / 0.5); }
+
+/* dim the map tiles so the map doesn't glare */
+.dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }
+
+.dark #root,
+.dark #root > div {
+  background-color: #0b1410;
+}
+
+.dark header img {
+  border-radius: 0.75rem;
+}
+
+/* Form fields: dark surface and readable text (borders are left alone so error states stay red) */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: #111d18;
+  color: #f0f6f3;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6f8a7e;
+}
+/* Browser autofill paints inputs white or yellow */
+.dark input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #111d18 inset;
+  -webkit-text-fill-color: #f0f6f3;
+}
+
+/* Success messages and toasts (green / emerald tints) */
+.dark {
+  --color-green-50: #10281f;
+  --color-green-100: #12302a;
+  --color-green-200: #1f5a45;
+  --color-green-700: #6ee7b7;
+  --color-green-800: #86efac;
+  --color-green-900: #bbf7d0;
+
+  --color-emerald-50: #10281f;
+  --color-emerald-100: #12302a;
+  --color-emerald-200: #1f5a45;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #86efac;
+  --color-emerald-900: #bbf7d0;
+}

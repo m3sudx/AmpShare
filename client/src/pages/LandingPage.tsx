@@ -7,8 +7,10 @@ import CtaSection from "../components/landing/CtaSection";
 import FaqSection from "../components/landing/FaqSection";
 import LandingFooter from "../components/landing/LandingFooter";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useLightOnly } from "../hooks/useTheme";
 
 export default function LandingPage() {
+  useLightOnly();
   usePageTitle();
   return (
     <div className="w-full bg-white text-[#0F1F1A] font-['Inter',system-ui,sans-serif] text-[17px] leading-[1.6]">
