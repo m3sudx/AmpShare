@@ -4,6 +4,7 @@ import { pool } from "../../config/db";
 import { AppError } from "../../utils/app-error";
 import { withTransaction } from "../../utils/db-helpers";
 import { getPaymentProvider } from "./payments.provider";
+import { broadcastBookingUpdate } from "../../socket/bookingEvents";
 
 export interface PaymentDto {
   id: string;
@@ -41,7 +42,7 @@ function toPaymentDto(row: any): PaymentDto {
  * Initiates direct Telebirr payment for a completed charging session.
  * Enforces strict authorization, row locking, and idempotency.
  */
-export async function initiatePayment(driverId: string, bookingId: string, customerPhone: string) {
+async function initiatePaymentTx(driverId: string, bookingId: string, customerPhone: string) {
   const provider = getPaymentProvider();
 
   return withTransaction(async (client: PoolClient) => {
@@ -243,7 +244,7 @@ export async function getPaymentForBooking(userId: string, bookingId: string, us
 /**
  * Verifies transaction with provider and updates the payment record accordingly.
  */
-export async function verifyPayment(userId: string, paymentId: string, userRoles: string[] = []) {
+export async function verifyPaymentTx(userId: string, paymentId: string, userRoles: string[] = []) {
   const provider = getPaymentProvider();
 
   return withTransaction(async (client: PoolClient) => {
@@ -321,7 +322,7 @@ export async function verifyPayment(userId: string, paymentId: string, userRoles
  * Handles incoming gateway webhooks with cryptographic HMAC signature verification
  * and durable event deduplication.
  */
-export async function handleWebhook(rawBody: Buffer | string, signature?: string) {
+export async function handleWebhookTx(rawBody: Buffer | string, signature?: string) {
   const provider = getPaymentProvider();
 
   const isValid = provider.verifyWebhookSignature(rawBody, signature);
@@ -400,7 +401,34 @@ export async function handleWebhook(rawBody: Buffer | string, signature?: string
         [payment.id, event.errorMessage || "Payment failed via webhook notification"],
       );
     }
-
-    return { success: true, paymentId: payment.id, newStatus: event.status };
+    return {
+      success: true,
+      paymentId: payment.id,
+      bookingId: payment.booking_id as string,
+      newStatus: event.status,
+    };
   });
+}
+
+
+// ---- Live updates: tell both driver and host when a payment changes ----
+
+export async function initiatePayment(driverId: string, bookingId: string, customerPhone: string) {
+  const result = await initiatePaymentTx(driverId, bookingId, customerPhone);
+  void broadcastBookingUpdate(bookingId, "PAYMENT_UPDATED");
+  return result;
+}
+
+export async function verifyPayment(userId: string, paymentId: string, userRoles: string[] = []) {
+  const payment = await verifyPaymentTx(userId, paymentId, userRoles);
+  void broadcastBookingUpdate(payment.bookingId, "PAYMENT_UPDATED");
+  return payment;
+}
+
+export async function handleWebhook(rawBody: Buffer | string, signature?: string) {
+  const result = await handleWebhookTx(rawBody, signature);
+  if ("bookingId" in result && result.bookingId) {
+    void broadcastBookingUpdate(result.bookingId, "PAYMENT_UPDATED");
+  }
+  return result;
 }

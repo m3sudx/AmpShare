@@ -35,6 +35,7 @@ import {
 import { getErrorMessage } from "../../utils/errors";
 import { formatDate, formatTime } from "../../utils/format";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { useBookingEvents } from "../../hooks/useBookingLive"; // NEW
 
 type LoadState =
   | { status: "loading" }
@@ -136,6 +137,17 @@ export default function BookingDetailsPage() {
       /* keep what is on screen */
     }
   }, [id]);
+
+  // NEW: live updates. The host confirmed, a session started or finished, or a payment changed
+  const [paymentTick, setPaymentTick] = useState(0);
+  useBookingEvents((update) => {
+    if (update.bookingId !== id) return;
+    void refreshQuietly();
+    // Remount the payment box so the host sees "paid" without a reload
+    if (state.status === "ready" && state.booking.host.id === user?.id) {
+      setPaymentTick((t) => t + 1);
+    }
+  });
 
   const closeDialog = () => {
     setPending(null);
@@ -377,6 +389,7 @@ export default function BookingDetailsPage() {
         <div className="space-y-6 lg:col-span-2">
           {booking.finalCost !== null && (
             <PaymentSection
+              key={paymentTick} // NEW
               bookingId={booking.id}
               finalCost={booking.finalCost}
               isDriver={booking.driverId === user?.id}
