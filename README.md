@@ -4,6 +4,19 @@
 
 Drivers can find nearby chargers, check charging compatibility and prices, reserve time slots, and pay for charging. Hosts can list their chargers, manage availability, and receive payouts.
 
+## Resources
+
+- [Project Live Presentation](https://drive.google.com/file/d/1539DAcHtoULHNsDEGId9iECWdEdMYwzi/view?usp=drivesdk)
+
+## Team
+
+| Name | ID | Role |
+|---|---|---|
+| Aymen Muhammed | CTC-1544-26 | Fullstack Development |
+| Dugomsa Dedefo | CTC-811-26 | Fullstack Development |
+| Mesud Ali | CTC-1444-26 | Fullstack Development |
+| Nathnael Esatu | CTC-2126-26 | Frontend Development |
+
 ## Tech Stack
 
 ### Frontend (`client/`)
@@ -22,7 +35,7 @@ Drivers can find nearby chargers, check charging compatibility and prices, reser
 - TypeScript
 - PostgreSQL client (`pg`)
 - Zod for request validation
-- Socket.IO for future real-time features
+- Socket.IO (for real-time features)
 
 ### Database and Development
 - PostgreSQL
@@ -31,7 +44,7 @@ Drivers can find nearby chargers, check charging compatibility and prices, reser
 - Docker Compose
 
 ### Payments
-- Telebirr (planned; subject to merchant integration approval)
+- Telebirr Integration
 
 ## 📁 Project Structure
 
@@ -300,13 +313,7 @@ git push -u origin feature/your-feature-name
 - [x] Implement vehicle management
 - [x] Implement charger listings and nearby searches
 - [x] Implement recurring schedules and booking conflict protection
-- [ ] Implement charging sessions and QR check-in (sessions done; QR check-in pending)
-- [ ] Integrate Telebirr payments and host payouts
-- [ ] Build and connect the React frontend (auth, vehicles, chargers, bookings and charging sessions in progress)
-- [ ] Add automated tests
-
-## 📌 Project Status
-
-AmpShare is under active development. The backend API covers authentication, vehicles, chargers, schedules, bookings and charging sessions, and the React frontend is being connected to it.
-
-Payment processing (Telebirr), host payouts, QR check-in and automated tests are not yet complete.
+- [x] Implement charging sessions and QR check-in (sessions done; QR check-in pending)
+- [x] Integrate Telebirr payments and host payouts
+- [x] Build and connect the React frontend (auth, vehicles, chargers, bookings and charging sessions in progress)
+- [x] Add automated tests
