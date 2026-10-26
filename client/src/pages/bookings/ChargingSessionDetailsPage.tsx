@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, RefreshCw, X, Zap } from "lucide-react";
 import FinishSessionDialog from "../../components/bookings/FinishSessionDialog";
 import StatusBadge from "../../components/bookings/StatusBadge";
 import PaymentSection from "../../components/payments/PaymentSection";
+import { ReviewPrompt } from "../../components/reviews/ReviewPrompt";
 import { useAuth } from "../../context";
 import { finishSession, getBooking, getSession } from "../../services/bookings.api";
 import type { Booking, ChargingSession } from "../../types/booking";
@@ -13,7 +15,7 @@ import { formatDate, formatPrice, formatTime } from "../../utils/format";
 import { formatElapsed, formatHoursMinutesText } from "../../utils/session";
 import { isAxiosError } from "axios";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { useBookingEvents } from "../../hooks/useBookingLive"; // NEW
+import { useBookingEvents } from "../../hooks/useBookingLive";
 
 type LoadState =
   | { status: "loading" }
@@ -34,6 +36,7 @@ export default function ChargingSessionDetailsPage() {
   usePageTitle("Session details");
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -81,11 +84,15 @@ export default function ChargingSessionDetailsPage() {
         const booking = await getBooking(session.bookingId);
         setNow(Date.now());
         setState({ status: "ready", session, booking });
+        // so the review form appears right after payment succeeds
+        void queryClient.invalidateQueries({
+          queryKey: ["booking-review", session.bookingId],
+        });
       })
       .catch(() => {});
   };
 
-  // NEW: live updates. The host finished the session, or the driver paid
+  // Live updates: the host finished the session, or the driver paid
   const [paymentTick, setPaymentTick] = useState(0);
   useBookingEvents((update) => {
     if (state.status !== "ready" || update.bookingId !== state.session.bookingId) return;
@@ -161,6 +168,7 @@ export default function ChargingSessionDetailsPage() {
 
   const { session, booking } = state;
   const isHost = booking.host.id === user?.id;
+  const isDriver = booking.driverId === user?.id;
   const start = session.startedAt ?? session.booking.startTime;
   const endMs = session.endedAt ? new Date(session.endedAt).getTime() : now;
   const elapsedMs = Math.max(0, endMs - new Date(start).getTime());
@@ -289,13 +297,18 @@ export default function ChargingSessionDetailsPage() {
 
       {session.status === "FINISHED" && session.finalCost !== null && (
         <PaymentSection
-          key={paymentTick} // NEW
+          key={paymentTick}
           bookingId={booking.id}
           finalCost={session.finalCost}
-          isDriver={booking.driverId === user?.id}
+          isDriver={isDriver}
           defaultPhone={user?.phoneNumber}
           onPaymentSuccess={refreshQuietly}
         />
+      )}
+
+      {/* The driver rates the charger once the session is paid (the server decides when) */}
+      {session.status === "FINISHED" && isDriver && (
+        <ReviewPrompt bookingId={booking.id} />
       )}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

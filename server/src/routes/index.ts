@@ -8,6 +8,7 @@ import chargingSessionsRoutes from "../modules/charging-sessions/charging-sessio
 import notificationsRoutes from "../modules/notifications/notifications.routes";
 import paymentsRoutes from "../modules/payments/payments.routes";
 import hostPayoutsRoutes from "../modules/host-payouts/host-payouts.routes";
+import reviewsRoutes from "../modules/reviews/reviews.routes";
 
 const apiRouters = Router();
 
@@ -20,5 +21,6 @@ apiRouters.use("/charging-sessions", chargingSessionsRoutes);
 apiRouters.use("/notifications", notificationsRoutes);
 apiRouters.use("/payments", paymentsRoutes);
 apiRouters.use("/host-payouts", hostPayoutsRoutes);
+apiRouters.use('/', reviewsRoutes)
 
 export default apiRouters;

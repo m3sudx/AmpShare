@@ -5,7 +5,7 @@ import { Link, useParams } from "react-router";
 import AvailabilityCard from "../../components/chargers/AvailabilityCard";
 import ChargerLocationMap from "../../components/chargers/ChargerLocationMap";
 import { useCharger, useChargerSchedules } from "../../hooks/useChargerDetails";
-import { useChargerLive } from "../../hooks/useChargerLive"; 
+import { useChargerLive } from "../../hooks/useChargerLive";
 import { getRoute } from "../../services/routing.api";
 import {
   formatSlot,
@@ -14,7 +14,8 @@ import {
 } from "../../utils/scheduleFormat";
 
 import { usePageTitle } from "../../hooks/usePageTitle";
-
+import { StarDisplay } from "../../components/reviews/StarRating";
+import { ChargerReviews } from "../../components/reviews/ChargerReviews";
 
 const PLUG_LABEL = { "GB/T": "GB/T", TYPE_2: "Type 2", CCS2: "CCS2" } as const;
 
@@ -224,6 +225,13 @@ export default function ChargerDetailsPage() {
               <PinIcon />
               {c.addressDescription}
             </p>
+            {c.rating && (
+              <StarDisplay
+                average={c.rating.average}
+                count={c.rating.count}
+                size={16}
+              />
+            )}
             <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
               <span className="rounded-full bg-slate-100 px-3 py-1.5">
                 {PLUG_LABEL[c.plugType]}
@@ -313,6 +321,8 @@ export default function ChargerDetailsPage() {
             isLoading={schedulesQuery.isLoading}
             isError={schedulesQuery.isError}
           />
+
+          <ChargerReviews chargerId={c.id} />
         </div>
 
         <aside className="lg:sticky lg:top-6">

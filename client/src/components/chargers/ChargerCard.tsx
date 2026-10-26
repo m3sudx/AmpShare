@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import type { NearbyCharger } from "../../types/charger";
+import { StarDisplay } from "../reviews/StarRating";
 
 const PLUG_LABEL = { "GB/T": "GB/T", TYPE_2: "Type 2", CCS2: "CCS2" } as const;
 
@@ -28,6 +29,9 @@ export default function ChargerCard({ charger, active, onHover }: Props) {
           <p className="mt-0.5 text-sm text-slate-500">
             {formatDistance(charger.distanceMeters)} away
           </p>
+          <div className="mt-1">
+            <StarDisplay average={charger.rating.average} count={charger.rating.count} />
+          </div>
         </div>
         <p className="shrink-0 font-bold text-[#0F9468]">
           {charger.pricePerKwh.toFixed(2)}

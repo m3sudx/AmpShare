@@ -8,6 +8,25 @@ import type {
   UpdateChargerInput,
 } from "./chargers.validation";
 
+// ---------- ratings ----------
+
+export interface Rating {
+  average: number | null; // 1.0 to 5.0, one decimal; null until the first review
+  count: number;
+}
+
+// Reusable SQL pieces: the charger table is always referred to as "chargers"
+const RATING_COLUMNS = `
+  (SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.charger_id = chargers.id) AS avg_rating,
+  (SELECT COUNT(*)::int FROM reviews r WHERE r.charger_id = chargers.id) AS review_count`;
+
+function toRating(row: { avg_rating?: number | string | null; review_count?: number | string | null }): Rating {
+  return {
+    average: row.avg_rating === null || row.avg_rating === undefined ? null : Number(row.avg_rating),
+    count: Number(row.review_count ?? 0),
+  };
+}
+
 // ---------- GET /api/chargers/nearby ----------
 
 interface NearbyChargerRow extends QueryResultRow {
@@ -19,6 +38,8 @@ interface NearbyChargerRow extends QueryResultRow {
   latitude: number | string;
   longitude: number | string;
   distance_meters: number | string;
+  avg_rating: number | string | null;
+  review_count: number | string;
 }
 
 export interface NearbyCharger {
@@ -32,6 +53,7 @@ export interface NearbyCharger {
     longitude: number;
   };
   distanceMeters: number;
+  rating: Rating;
 }
 
 export async function findNearbyChargers(
@@ -54,7 +76,9 @@ export async function findNearbyChargers(
           ST_MakePoint($1, $2),
           4326
         )::geography
-      ) AS distance_meters
+      ) AS distance_meters,
+
+      ${RATING_COLUMNS}
 
     FROM chargers
 
@@ -97,6 +121,7 @@ export async function findNearbyChargers(
       longitude: Number(row.longitude),
     },
     distanceMeters: Number(row.distance_meters),
+    rating: toRating(row),
   }));
 }
 
@@ -115,6 +140,8 @@ interface ChargerRow extends QueryResultRow {
   latitude: number | string;
   longitude: number | string;
   created_at: Date;
+  avg_rating?: number | string | null;
+  review_count?: number | string | null;
 }
 
 export interface Charger {
@@ -217,6 +244,8 @@ interface ChargerSummaryRow extends QueryResultRow {
   timezone_name: string;
   latitude: number | string;
   longitude: number | string;
+  avg_rating: number | string | null;
+  review_count: number | string;
 }
 
 export interface ChargerSummary {
@@ -231,6 +260,7 @@ export interface ChargerSummary {
     latitude: number;
     longitude: number;
   };
+  rating: Rating;
 }
 
 export interface ListChargersResult {
@@ -258,7 +288,8 @@ export async function listChargers(
       price_per_kwh,
       timezone_name,
       ST_Y(location::geometry) AS latitude,
-      ST_X(location::geometry) AS longitude
+      ST_X(location::geometry) AS longitude,
+      ${RATING_COLUMNS}
     FROM chargers
     ${whereClause}
     ORDER BY created_at DESC, id ASC
@@ -301,6 +332,7 @@ export async function listChargers(
         latitude: Number(row.latitude),
         longitude: Number(row.longitude),
       },
+      rating: toRating(row),
     })),
     total: Number(countResult.rows[0].total),
   };
@@ -311,6 +343,7 @@ export async function listChargers(
 
 export interface ChargerDetail extends Omit<Charger, "hostId"> {
   hostId?: string; // only present when the viewer is the owner
+  rating: Rating;
 }
 
 function mapChargerRow(row: ChargerRow): Charger {
@@ -349,7 +382,8 @@ export async function getChargerById(
       timezone_name,
       ST_Y(location::geometry) AS latitude,
       ST_X(location::geometry) AS longitude,
-      created_at
+      created_at,
+      ${RATING_COLUMNS}
     FROM chargers
     WHERE id = $1
       AND (is_active = TRUE OR host_id = $2::uuid);
@@ -363,8 +397,9 @@ export async function getChargerById(
   }
 
   const { hostId, ...charger } = mapChargerRow(row);
+  const detail = { ...charger, rating: toRating(row) };
 
-  return row.host_id === viewerId ? { ...charger, hostId } : charger;
+  return row.host_id === viewerId ? { ...detail, hostId } : detail;
 }
 
 

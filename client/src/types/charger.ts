@@ -1,5 +1,10 @@
 export type PlugType = "GB/T" | "TYPE_2" | "CCS2";
 
+export interface Rating {
+  average: number;
+  count: number;
+}
+
 export interface Charger {
   id: string;
   hostId?: string; // only returned to the owner
@@ -12,6 +17,7 @@ export interface Charger {
   timezoneName: string;
   location: { latitude: number; longitude: number };
   createdAt: string;
+  rating?: Rating; // returned by GET /chargers/:id
 }
 export interface NearbyCharger {
   id: string;
@@ -21,6 +27,7 @@ export interface NearbyCharger {
   pricePerKwh: number;
   location: { latitude: number; longitude: number };
   distanceMeters: number;
+  rating: Rating;
 }
 
 export interface CreateChargerInput {
