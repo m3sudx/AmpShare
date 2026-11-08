@@ -285,7 +285,7 @@ export default function AdminPayoutsPage() {
                             </span>
                           )}
                           {p.customerPaymentReference && (
-                            <p className="text-[10px] font-mono text-slate-400 truncate max-w-[120px]">
+                            <p className="text-[10px] font-mono text-slate-400 truncate max-w-30">
                               {p.customerPaymentReference}
                             </p>
                           )}
