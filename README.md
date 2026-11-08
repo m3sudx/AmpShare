@@ -4,8 +4,11 @@
 
 Drivers can find nearby chargers, check charging compatibility and prices, reserve time slots, and pay for charging. Hosts can list their chargers, manage availability, and receive payouts.
 
+🔗 **Live demo:** [amp-share-ivory.vercel.app](https://amp-share-ivory.vercel.app/)
+
 ## Resources
 
+- [Live Application](https://amp-share-ivory.vercel.app/)
 - [Project Live Presentation](https://drive.google.com/file/d/1539DAcHtoULHNsDEGId9iECWdEdMYwzi/view?usp=drivesdk)
 
 ## Team
@@ -16,7 +19,6 @@ Drivers can find nearby chargers, check charging compatibility and prices, reser
 | Dugomsa Dedefo | CTC-811-26 | Fullstack Development |
 | Mesud Ali | CTC-1444-26 | Fullstack Development |
 | Nathnael Esatu | CTC-2126-26 | Frontend Development |
-
 ## Tech Stack
 
 ### Frontend (`client/`)

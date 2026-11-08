@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "migrate": "tsx src/scripts/migrate.ts",
     "seed:demo": "tsx src/scripts/seed-demo-data.ts",
+    "seed:addis": "tsx src/scripts/seed-addis.ts",
     "demo:payment": "tsx src/scripts/demo-payment-flow.ts",
     "test": "tsx src/tests/payments.test.ts"
   },
