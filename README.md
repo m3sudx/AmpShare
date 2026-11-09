@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="doc/ampshare-banner.png" alt="AmpShare: find, book and share EV chargers" width="100%">
-</p>
-
 <h1 align="center">AmpShare ⚡</h1>
 
 <p align="center">
@@ -371,3 +367,7 @@ git push -u origin feature/your-feature-name
 - [x] Build and connect the React frontend
 - [x] Add automated tests
 - [ ] QR check-in for charging sessions
+
+<p align="center">
+  <img src="doc/ampshare-banner.png" alt="AmpShare: find, book and share EV chargers" width="100%">
+</p>
