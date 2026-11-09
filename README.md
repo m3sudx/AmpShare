@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/ampshare-banner.png" alt="AmpShare: find, book and share EV chargers" width="100%">
+  <img src="doc/ampshare-banner.png" alt="AmpShare: find, book and share EV chargers" width="100%">
 </p>
 
 <h1 align="center">AmpShare ⚡</h1>
